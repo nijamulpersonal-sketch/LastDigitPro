@@ -51,23 +51,22 @@ export default function Home() {
       </a>
 
       {/* Main Dashboard */}
-      <div className="max-w-md mx-auto px-4 pt-6">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <div className="glass rounded-3xl p-6 mb-4 gold-glow">
-            <h1 className="text-4xl font-bold bg-gradient-to-r from-amber-300 to-yellow-500 bg-clip-text text-transparent">
+      <div className="max-w-md mx-auto px-4 pt-4">
+        {/* Header - Compact & Premium */}
+        <div className="text-center mb-6">
+          <div className="glass rounded-2xl px-4 py-3 mb-2 gold-glow border-amber-400/20">
+            <h1 className="text-2xl font-black bg-gradient-to-r from-amber-300 via-yellow-500 to-amber-600 bg-clip-text text-transparent tracking-tighter">
               LAST DIGIT PRO
             </h1>
-            <p className="text-gray-300 mt-2">Premium Lottery Insights & Predictions</p>
-            <div className="mt-4 flex justify-center items-center gap-3">
+            <div className="flex justify-center items-center gap-2 mt-1">
               <div className="flex items-center">
-                <ShieldCheck className="w-4 h-4 text-emerald-400 mr-1" />
-                <span className="text-xs text-gray-300">Secure VIP Access</span>
+                <ShieldCheck className="w-3 h-3 text-emerald-400 mr-1" />
+                <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Secure</span>
               </div>
               <div className="w-1 h-1 bg-gray-600 rounded-full"></div>
               <div className="flex items-center">
-                <Clock className="w-4 h-4 text-amber-400 mr-1" />
-                <span className="text-xs text-gray-300">3 Daily Updates</span>
+                <Clock className="w-3 h-3 text-amber-400 mr-1" />
+                <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Live Updates</span>
               </div>
             </div>
           </div>
