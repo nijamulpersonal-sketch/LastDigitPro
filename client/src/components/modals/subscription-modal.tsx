@@ -53,9 +53,12 @@ export function SubscriptionModal({ isOpen, onClose, planType }: SubscriptionMod
         </div>
         
         <div className="space-y-3">
-          <button className="w-full py-3 rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-700 text-white font-bold hover:opacity-90 transition shadow-lg shadow-emerald-500/20">
+          <a 
+            href={`upi://pay?pa=lastdigitpro765@oksbi&pn=LastDigitPro&am=${isFirstTime ? '29' : '1199'}&cu=INR`}
+            className="w-full py-3 rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-700 text-white font-bold hover:opacity-90 transition shadow-lg shadow-emerald-500/20 text-center block"
+          >
             Pay via UPI
-          </button>
+          </a>
           <button 
             onClick={onClose}
             className="w-full py-3 rounded-xl bg-white/5 text-gray-300 font-semibold hover:bg-white/10 transition"
