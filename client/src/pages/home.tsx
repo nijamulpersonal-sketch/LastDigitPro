@@ -11,11 +11,13 @@ import {
   MessageCircle, 
   Lock
 } from "lucide-react";
+import { useLocation } from "wouter";
 import { PrivacyPolicyModal } from "@/components/modals/privacy-policy-modal";
 import { SubscriptionModal } from "@/components/modals/subscription-modal";
 import { SettingsModal } from "@/components/modals/settings-modal";
 
 export default function Home() {
+  const [location, setLocation] = useLocation();
   const [showPrivacy, setShowPrivacy] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [showSubscription, setShowSubscription] = useState(false);
@@ -146,7 +148,10 @@ export default function Home() {
         {/* Features Grid */}
         <div className="grid grid-cols-2 gap-4 mb-8">
           {/* Lucky Search Card */}
-          <div className="glass card-hover rounded-2xl p-4 cursor-pointer relative group">
+          <div 
+            onClick={() => setLocation('/lucky-search')}
+            className="glass card-hover rounded-2xl p-4 cursor-pointer relative group"
+          >
             <div className="absolute top-3 right-3">
               <Lock className="w-4 h-4 text-amber-400" />
             </div>
@@ -160,7 +165,10 @@ export default function Home() {
           </div>
 
           {/* Dear Digits Card */}
-          <div className="glass card-hover rounded-2xl p-4 cursor-pointer">
+          <div 
+            onClick={() => setLocation('/dear-digits')}
+            className="glass card-hover rounded-2xl p-4 cursor-pointer"
+          >
             <div className="flex items-center gap-3 mb-2">
               <div className="bg-gradient-to-br from-cyan-500 to-blue-600 p-2 rounded-lg shadow-lg shadow-blue-500/20">
                 <TrendingUp className="w-5 h-5 text-white" />
@@ -171,7 +179,10 @@ export default function Home() {
           </div>
 
           {/* Lottery Fax Card */}
-          <div className="glass card-hover rounded-2xl p-4 cursor-pointer">
+          <div 
+            onClick={() => setLocation('/lottery-fax')}
+            className="glass card-hover rounded-2xl p-4 cursor-pointer"
+          >
             <div className="flex items-center gap-3 mb-2">
               <div className="bg-gradient-to-br from-pink-500 to-rose-600 p-2 rounded-lg shadow-lg shadow-rose-500/20">
                 <FileText className="w-5 h-5 text-white" />
