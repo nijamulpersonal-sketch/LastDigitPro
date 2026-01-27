@@ -73,62 +73,75 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Compact VIP Access Card */}
-        <div className="relative glass-dark rounded-[1.5rem] p-4 mb-8 border border-amber-400/30 shadow-lg shadow-amber-400/5">
+        {/* Compact VIP Access Card - Premium Glassmorphism Edition */}
+        <div className="relative overflow-hidden glass-dark rounded-[2rem] p-5 mb-8 border border-white/10 shadow-[0_0_20px_rgba(251,191,36,0.1)]">
+          {/* Animated Glaze Effect */}
+          <div className="absolute -inset-full h-[300%] w-[300%] bg-[linear-gradient(45deg,transparent_25%,rgba(255,255,255,0.05)_50%,transparent_75%)] animate-[shimmer_5s_infinite] pointer-events-none"></div>
+          
+          {/* Subtle Glow Points */}
+          <div className="absolute top-0 right-0 w-32 h-32 bg-amber-500/10 blur-[50px] -z-10"></div>
+          <div className="absolute bottom-0 left-0 w-32 h-32 bg-purple-500/10 blur-[50px] -z-10"></div>
+
           {/* Trusted Badge */}
-          <div className="absolute -top-2 -right-2">
-            <div className="bg-amber-400 text-black text-[8px] font-black px-2 py-0.5 rounded-full shadow-md uppercase tracking-wider">
+          <div className="absolute -top-2 -right-2 z-20">
+            <div className="bg-gradient-to-r from-amber-400 to-yellow-500 text-black text-[8px] font-black px-3 py-1 rounded-full shadow-[0_0_10px_rgba(251,191,36,0.3)] uppercase tracking-wider">
               Trusted
             </div>
           </div>
 
-          <div className="flex items-center gap-2 mb-3">
-            <Crown className="w-5 h-5 text-amber-400" />
-            <h2 className="text-lg font-black text-white tracking-tight uppercase">VIP Daily Access</h2>
+          <div className="flex items-center gap-2 mb-4 relative z-10">
+            <div className="p-1.5 bg-amber-400/10 rounded-lg">
+              <Crown className="w-5 h-5 text-amber-400 drop-shadow-[0_0_5px_rgba(251,191,36,0.5)]" />
+            </div>
+            <h2 className="text-lg font-black text-white tracking-tight uppercase bg-gradient-to-r from-white to-gray-400 bg-clip-text text-transparent">VIP Daily Access</h2>
           </div>
           
-          <div className="grid grid-cols-2 gap-2 mb-4">
+          <div className="grid grid-cols-2 gap-3 mb-4 relative z-10">
             <div 
               onClick={() => handlePlanSelect('first-time')}
-              className="bg-white/5 border border-white/10 rounded-xl p-3 cursor-pointer hover:border-amber-500/30 transition text-center group"
+              className="relative overflow-hidden bg-white/[0.03] border border-white/10 rounded-2xl p-4 cursor-pointer hover:bg-white/[0.08] hover:border-amber-500/40 transition-all duration-500 text-center group"
             >
-              <div className="text-[9px] text-emerald-400 font-bold uppercase mb-0.5">Trial Offer</div>
-              <div className="text-2xl font-black text-white group-hover:text-amber-400 transition-colors">₹29</div>
-              <div className="text-[9px] text-gray-500 font-medium uppercase">30 Days</div>
+              <div className="text-[9px] text-emerald-400 font-bold uppercase mb-1 tracking-widest">Trial Offer</div>
+              <div className="text-3xl font-black text-white group-hover:scale-110 transition-transform duration-500 drop-shadow-[0_0_8px_rgba(255,255,255,0.2)]">₹29</div>
+              <div className="text-[9px] text-gray-500 font-medium uppercase mt-1">30 Days</div>
             </div>
             
             <div 
               onClick={() => handlePlanSelect('regular')}
-              className="bg-white/5 border border-white/10 rounded-xl p-3 cursor-pointer hover:border-amber-500/30 transition text-center group"
+              className="relative overflow-hidden bg-amber-400/[0.03] border border-amber-400/10 rounded-2xl p-4 cursor-pointer hover:bg-amber-400/[0.08] hover:border-amber-400/40 transition-all duration-500 text-center group"
             >
-              <div className="text-[9px] text-gray-400 font-bold uppercase mb-0.5">Premium</div>
-              <div className="text-2xl font-black text-amber-400 group-hover:text-amber-300 transition-colors">₹1199</div>
-              <div className="text-[9px] text-gray-500 font-medium uppercase">30 Days</div>
+              <div className="text-[9px] text-amber-400/60 font-bold uppercase mb-1 tracking-widest">Premium</div>
+              <div className="text-3xl font-black text-amber-400 group-hover:scale-110 transition-transform duration-500 drop-shadow-[0_0_10px_rgba(251,191,36,0.3)]">₹1199</div>
+              <div className="text-[9px] text-gray-500 font-medium uppercase mt-1">30 Days</div>
             </div>
           </div>
 
-          <div className="flex gap-2 mb-4">
+          <div className="flex gap-2 mb-4 relative z-10">
             {['01:00 PM', '06:00 PM', '08:00 PM'].map((time) => (
-              <div key={time} className="flex-1 py-1.5 rounded-lg bg-slate-800/50 border border-slate-700/50 text-emerald-400 font-bold text-[10px] text-center">
+              <div key={time} className="flex-1 py-2 rounded-xl bg-white/[0.03] border border-white/5 text-emerald-400 font-bold text-[10px] text-center shadow-inner group hover:bg-white/[0.08] transition-colors">
                 {time}
               </div>
             ))}
           </div>
 
-          <div className="bg-rose-500/5 border border-rose-500/10 rounded-xl p-3 mb-4">
-            <div className="flex gap-2">
-              <ShieldCheck className="w-4 h-4 text-rose-500 shrink-0" />
-              <p className="text-[10px] text-gray-400 leading-tight">
-                <span className="text-rose-400 font-bold uppercase">100% Refund:</span> If predictions miss, full payment refunded immediately.
+          <div className="bg-gradient-to-r from-rose-500/10 to-transparent border-l-2 border-rose-500 rounded-r-xl p-3 mb-5 relative z-10">
+            <div className="flex gap-3 items-center">
+              <div className="p-1.5 bg-rose-500/20 rounded-lg">
+                <ShieldCheck className="w-4 h-4 text-rose-500" />
+              </div>
+              <p className="text-[10px] text-gray-300 leading-tight">
+                <span className="text-rose-400 font-bold uppercase block mb-0.5">100% Refund Guarantee</span>
+                If predictions miss, full payment is refunded.
               </p>
             </div>
           </div>
 
           <button 
             onClick={() => handlePlanSelect('first-time')}
-            className="w-full py-3 rounded-xl bg-gradient-to-r from-amber-400 to-amber-600 text-slate-900 font-black text-sm shadow-md shadow-amber-400/20 active:scale-95 uppercase tracking-wide"
+            className="relative w-full py-4 rounded-2xl bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-600 text-slate-900 font-black text-sm shadow-[0_4px_15px_rgba(251,191,36,0.3)] hover:shadow-[0_6px_20px_rgba(251,191,36,0.5)] active:scale-95 transition-all duration-300 uppercase tracking-widest overflow-hidden group"
           >
-            Unlock VIP Access
+            <span className="relative z-10">Unlock VIP Access</span>
+            <div className="absolute top-0 -left-full w-full h-full bg-gradient-to-r from-transparent via-white/40 to-transparent group-hover:animate-[shimmer_1.5s_infinite]"></div>
           </button>
         </div>
 
