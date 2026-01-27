@@ -54,7 +54,7 @@ export function SubscriptionModal({ isOpen, onClose, planType }: SubscriptionMod
         
         <div className="space-y-3">
           <a 
-            href={`upi://pay?pa=lastdigitpro765@oksbi&pn=LastDigitPro&am=${isFirstTime ? '29' : '1199'}&cu=INR`}
+            href={`upi://pay?pa=nijamul.mal@ptyes&pn=LastDigitPro&am=${isFirstTime ? '29' : '1199'}&cu=INR`}
             className="w-full py-3 rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-700 text-white font-bold hover:opacity-90 transition shadow-lg shadow-emerald-500/20 text-center block"
           >
             Pay via UPI
