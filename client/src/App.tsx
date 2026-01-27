@@ -7,7 +7,6 @@ import NotFound from "@/pages/not-found";
 import Home from "@/pages/home";
 import LuckySearch from "@/pages/lucky-search";
 import DearDigits from "@/pages/dear-digits";
-import LotteryFax from "@/pages/lottery-fax";
 
 function Router() {
   return (
@@ -15,7 +14,6 @@ function Router() {
       <Route path="/" component={Home} />
       <Route path="/lucky-search" component={LuckySearch} />
       <Route path="/dear-digits" component={DearDigits} />
-      <Route path="/lottery-fax" component={LotteryFax} />
       <Route component={NotFound} />
     </Switch>
   );

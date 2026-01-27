@@ -182,7 +182,7 @@ export default function Home() {
 
           {/* Lottery Fax Card */}
           <div 
-            onClick={() => setLocation('/lottery-fax')}
+            onClick={() => window.open('https://lotterysambad.one/', '_blank')}
             className="glass card-hover rounded-2xl p-4 cursor-pointer"
           >
             <div className="flex items-center gap-3 mb-2">
