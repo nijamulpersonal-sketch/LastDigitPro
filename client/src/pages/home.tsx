@@ -73,55 +73,62 @@ export default function Home() {
           </div>
         </div>
 
-        {/* VIP Daily Access Card */}
-        <div className="relative glass-dark rounded-[2.5rem] p-8 mb-10 border-2 border-amber-400/50 shadow-2xl shadow-amber-400/10">
+        {/* Compact VIP Access Card */}
+        <div className="relative glass-dark rounded-[1.5rem] p-4 mb-8 border border-amber-400/30 shadow-lg shadow-amber-400/5">
           {/* Trusted Badge */}
-          <div className="absolute -top-3 -right-3">
-            <div className="bg-amber-400 text-black text-[10px] font-black px-4 py-1.5 rounded-full shadow-lg border-2 border-slate-900 uppercase tracking-wider">
+          <div className="absolute -top-2 -right-2">
+            <div className="bg-amber-400 text-black text-[8px] font-black px-2 py-0.5 rounded-full shadow-md uppercase tracking-wider">
               Trusted
             </div>
           </div>
 
-          <div className="flex items-center gap-3 mb-4">
-            <Crown className="w-8 h-8 text-amber-400" />
-            <h2 className="text-3xl font-black text-white tracking-tight">VIP Daily Access</h2>
+          <div className="flex items-center gap-2 mb-3">
+            <Crown className="w-5 h-5 text-amber-400" />
+            <h2 className="text-lg font-black text-white tracking-tight uppercase">VIP Daily Access</h2>
           </div>
           
-          <div className="flex items-baseline gap-4 mb-8">
-            <span className="text-5xl font-black text-amber-400">₹499</span>
-            <span className="text-xl text-gray-500 line-through font-medium">₹1599</span>
-            <span className="bg-emerald-500/10 text-emerald-400 text-xs font-bold px-3 py-1 rounded-md border border-emerald-500/20">
-              68.8% OFF
-            </span>
+          <div className="grid grid-cols-2 gap-2 mb-4">
+            <div 
+              onClick={() => handlePlanSelect('first-time')}
+              className="bg-white/5 border border-white/10 rounded-xl p-3 cursor-pointer hover:border-amber-500/30 transition text-center group"
+            >
+              <div className="text-[9px] text-emerald-400 font-bold uppercase mb-0.5">Trial Offer</div>
+              <div className="text-2xl font-black text-white group-hover:text-amber-400 transition-colors">₹29</div>
+              <div className="text-[9px] text-gray-500 font-medium uppercase">30 Days</div>
+            </div>
+            
+            <div 
+              onClick={() => handlePlanSelect('regular')}
+              className="bg-white/5 border border-white/10 rounded-xl p-3 cursor-pointer hover:border-amber-500/30 transition text-center group"
+            >
+              <div className="text-[9px] text-gray-400 font-bold uppercase mb-0.5">Premium</div>
+              <div className="text-2xl font-black text-amber-400 group-hover:text-amber-300 transition-colors">₹1199</div>
+              <div className="text-[9px] text-gray-500 font-medium uppercase">30 Days</div>
+            </div>
           </div>
 
-          <div className="flex gap-3 mb-8">
+          <div className="flex gap-2 mb-4">
             {['01:00 PM', '06:00 PM', '08:00 PM'].map((time) => (
-              <div key={time} className="flex-1 py-3 px-2 rounded-2xl bg-slate-800/50 border border-slate-700 text-emerald-400 font-bold text-sm text-center">
+              <div key={time} className="flex-1 py-1.5 rounded-lg bg-slate-800/50 border border-slate-700/50 text-emerald-400 font-bold text-[10px] text-center">
                 {time}
               </div>
             ))}
           </div>
 
-          <div className="bg-rose-500/10 border border-rose-500/20 rounded-3xl p-6 mb-8 relative overflow-hidden group">
-            <div className="flex gap-4 relative z-10">
-              <div className="bg-rose-500 p-2.5 rounded-2xl shadow-lg shadow-rose-500/40 shrink-0 h-fit">
-                <ShieldCheck className="w-6 h-6 text-white" />
-              </div>
-              <div>
-                <h3 className="text-rose-400 font-black text-lg uppercase tracking-tight mb-2">100% Refund Guarantee</h3>
-                <p className="text-gray-300 text-sm leading-relaxed font-medium">
-                  If our <span className="text-white font-bold underline decoration-rose-500/50">3 Daily Predictions</span> miss the target, your full payment will be refunded to your account immediately.
-                </p>
-              </div>
+          <div className="bg-rose-500/5 border border-rose-500/10 rounded-xl p-3 mb-4">
+            <div className="flex gap-2">
+              <ShieldCheck className="w-4 h-4 text-rose-500 shrink-0" />
+              <p className="text-[10px] text-gray-400 leading-tight">
+                <span className="text-rose-400 font-bold uppercase">100% Refund:</span> If predictions miss, full payment refunded immediately.
+              </p>
             </div>
           </div>
 
           <button 
-            onClick={() => handlePlanSelect('regular')}
-            className="w-full py-5 rounded-[2rem] bg-gradient-to-r from-amber-400 to-amber-600 hover:from-amber-300 hover:to-amber-500 text-slate-900 font-black text-xl shadow-xl shadow-amber-400/30 transition-all active:scale-95 uppercase tracking-wide"
+            onClick={() => handlePlanSelect('first-time')}
+            className="w-full py-3 rounded-xl bg-gradient-to-r from-amber-400 to-amber-600 text-slate-900 font-black text-sm shadow-md shadow-amber-400/20 active:scale-95 uppercase tracking-wide"
           >
-            Unlock VIP Predictions
+            Unlock VIP Access
           </button>
         </div>
 
