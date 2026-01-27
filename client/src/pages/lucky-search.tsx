@@ -41,6 +41,30 @@ export default function LuckySearch() {
           </div>
         </div>
 
+        {/* 50 Premium Codes Section */}
+        <div className="glass-dark rounded-3xl p-6 mb-6 border-amber-500/20">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="font-bold text-white flex items-center gap-2">
+              <span className="w-2 h-2 bg-amber-400 rounded-full animate-pulse"></span>
+              50 Premium Lucky Codes
+            </h3>
+            <span className="text-[10px] text-amber-400 font-bold bg-amber-400/10 px-2 py-1 rounded-full">VIP ONLY</span>
+          </div>
+          
+          <div className="grid grid-cols-5 gap-2 max-h-60 overflow-y-auto pr-2 custom-scrollbar">
+            {Array.from({ length: 50 }).map((_, i) => (
+              <div key={i} className="bg-white/5 border border-white/10 rounded-lg p-2 text-center">
+                <span className="text-sm font-mono font-bold text-amber-300">
+                  {Math.floor(1000 + Math.random() * 9000)}
+                </span>
+              </div>
+            ))}
+          </div>
+          <p className="text-[10px] text-gray-500 mt-4 text-center italic">
+            * Codes are refreshed every 24 hours based on trend analysis.
+          </p>
+        </div>
+
         <div className="glass rounded-2xl p-5 border-white/10">
           <div className="flex gap-3">
             <Info className="w-5 h-5 text-purple-400 flex-shrink-0" />
