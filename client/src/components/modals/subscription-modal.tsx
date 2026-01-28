@@ -24,7 +24,7 @@ export function SubscriptionModal({ isOpen, onClose, planType }: SubscriptionMod
           <h2 className="text-2xl font-bold text-white mb-2">
             {isFirstTime ? "First Time User Offer" : "Regular Plan"}
           </h2>
-          <p className="text-gray-400 text-sm">30 Days Access</p>
+          <p className="text-gray-400 text-sm">{isFirstTime ? "12 Days Access" : "30 Days Access"}</p>
         </div>
         
         <div className="mb-6 text-center">
