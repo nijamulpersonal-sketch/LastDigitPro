@@ -109,7 +109,7 @@ export default function Home() {
             >
               <div className="text-[9px] text-emerald-400 font-bold uppercase mb-1 tracking-widest">Trial Offer</div>
               <div className="text-3xl font-black text-white group-hover:scale-110 transition-transform duration-500 drop-shadow-[0_0_8px_rgba(255,255,255,0.2)]">₹29</div>
-              <div className="text-[9px] text-gray-500 font-medium uppercase mt-1">30 Days</div>
+              <div className="text-[9px] text-gray-500 font-medium uppercase mt-1">12 Days</div>
             </div>
             
             <div 
