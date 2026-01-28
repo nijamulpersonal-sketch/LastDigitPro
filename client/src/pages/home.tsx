@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import logo from "@/assets/logo.png";
 import { 
   ShieldCheck, 
@@ -10,19 +10,30 @@ import {
   FileText, 
   Settings, 
   MessageCircle, 
-  Lock
+  Lock,
+  UserCircle
 } from "lucide-react";
 import { useLocation } from "wouter";
 import { PrivacyPolicyModal } from "@/components/modals/privacy-policy-modal";
 import { SubscriptionModal } from "@/components/modals/subscription-modal";
 import { SettingsModal } from "@/components/modals/settings-modal";
+import { ProfileModal } from "@/components/modals/profile-modal";
 
 export default function Home() {
   const [location, setLocation] = useLocation();
   const [showPrivacy, setShowPrivacy] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [showSubscription, setShowSubscription] = useState(false);
+  const [showProfile, setShowProfile] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<'first-time' | 'regular' | null>(null);
+  const [user, setUser] = useState<any>(null);
+
+  useEffect(() => {
+    const savedUser = localStorage.getItem('user_profile');
+    if (savedUser) {
+      setUser(JSON.parse(savedUser));
+    }
+  }, []);
 
   const handlePlanSelect = (plan: 'first-time' | 'regular') => {
     setSelectedPlan(plan);
@@ -37,6 +48,10 @@ export default function Home() {
     setTimeout(() => setShowPrivacy(true), 100);
   };
   const handlePrivacyClose = () => setShowPrivacy(false);
+
+  const handleProfileUpdate = (updatedUser: any) => {
+    setUser(updatedUser);
+  };
 
   return (
     <div className="min-h-screen pb-20">
@@ -55,13 +70,30 @@ export default function Home() {
       <div className="max-w-md mx-auto px-4 pt-4">
         {/* Header - Compact & Premium */}
         <div className="text-center mb-6">
-          <div className="glass rounded-2xl px-4 py-3 mb-2 gold-glow border-amber-400/20">
-            <div className="flex items-center justify-center gap-3">
-              <img src={logo} alt="Last Digit Pro Logo" className="w-10 h-10 rounded-full object-cover border border-amber-400/30 drop-shadow-[0_0_8px_rgba(251,191,36,0.3)]" />
-              <h1 className="text-2xl font-black bg-gradient-to-r from-amber-300 via-yellow-500 to-amber-600 bg-clip-text text-transparent tracking-tighter">
-                LAST DIGIT PRO
-              </h1>
+          <div className="flex justify-between items-center mb-4">
+            <div className="flex items-center gap-2">
+              <img src={logo} alt="Last Digit Pro Logo" className="w-8 h-8 rounded-full object-cover border border-amber-400/30" />
+              <span className="text-sm font-black text-white tracking-tighter">LAST DIGIT PRO</span>
             </div>
+            <button 
+              onClick={() => setShowProfile(true)}
+              className="p-1.5 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all flex items-center gap-2 group"
+            >
+              <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center shadow-lg shadow-amber-500/20 overflow-hidden">
+                {user?.photo ? (
+                  <img src={user.photo} alt="Profile" className="w-full h-full object-cover" />
+                ) : (
+                  <UserCircle className="w-5 h-5 text-white" />
+                )}
+              </div>
+              <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest group-hover:text-amber-400 transition-colors">Profile</span>
+            </button>
+          </div>
+
+          <div className="glass rounded-2xl px-4 py-3 mb-2 gold-glow border-amber-400/20">
+            <h1 className="text-2xl font-black bg-gradient-to-r from-amber-300 via-yellow-500 to-amber-600 bg-clip-text text-transparent tracking-tighter uppercase">
+              Premium Dashboard
+            </h1>
             <div className="flex justify-center items-center gap-2 mt-1">
               <div className="flex items-center">
                 <ShieldCheck className="w-3 h-3 text-emerald-400 mr-1" />
@@ -245,6 +277,12 @@ export default function Home() {
         isOpen={showSubscription} 
         onClose={() => setShowSubscription(false)} 
         planType={selectedPlan}
+      />
+
+      <ProfileModal
+        isOpen={showProfile}
+        onClose={() => setShowProfile(false)}
+        onUpdate={handleProfileUpdate}
       />
     </div>
   );
