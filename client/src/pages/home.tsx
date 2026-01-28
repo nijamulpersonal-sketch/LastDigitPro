@@ -11,13 +11,15 @@ import {
   Settings, 
   MessageCircle, 
   Lock,
-  UserCircle
+  UserCircle,
+  MessageSquare
 } from "lucide-react";
 import { useLocation } from "wouter";
 import { PrivacyPolicyModal } from "@/components/modals/privacy-policy-modal";
 import { SubscriptionModal } from "@/components/modals/subscription-modal";
 import { SettingsModal } from "@/components/modals/settings-modal";
 import { ProfileModal } from "@/components/modals/profile-modal";
+import { ChatBotModal } from "@/components/modals/chatbot-modal";
 
 export default function Home() {
   const [location, setLocation] = useLocation();
@@ -25,6 +27,7 @@ export default function Home() {
   const [showSettings, setShowSettings] = useState(false);
   const [showSubscription, setShowSubscription] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
+  const [showChatBot, setShowChatBot] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<'first-time' | 'regular' | null>(null);
   const [user, setUser] = useState<any>(null);
 
@@ -55,16 +58,14 @@ export default function Home() {
 
   return (
     <div className="min-h-screen pb-20">
-      {/* WhatsApp Floating Button */}
-      <a 
-        href="https://wa.me/916294712704?text=Hello%20Last%20Digit%20Pro%20team,%20I%20need%20assistance" 
-        target="_blank" 
-        rel="noreferrer"
-        className="fixed bottom-6 right-6 z-50 whatsapp-btn flex items-center gap-2 px-5 py-3 rounded-full font-semibold transition-all duration-300 text-white"
+      {/* AI Chat Bot Floating Button */}
+      <button 
+        onClick={() => setShowChatBot(true)}
+        className="fixed bottom-6 right-6 z-50 chatbot-btn flex items-center gap-2 px-5 py-3 rounded-full font-semibold transition-all duration-300 text-white bg-gradient-to-r from-purple-600 to-indigo-600 shadow-lg shadow-purple-500/30 hover:scale-105 active:scale-95"
       >
-        <MessageCircle className="w-5 h-5" />
+        <MessageSquare className="w-5 h-5" />
         <span>Support</span>
-      </a>
+      </button>
 
       {/* Main Dashboard */}
       <div className="max-w-md mx-auto px-4 pt-4">
@@ -283,6 +284,11 @@ export default function Home() {
         isOpen={showProfile}
         onClose={() => setShowProfile(false)}
         onUpdate={handleProfileUpdate}
+      />
+
+      <ChatBotModal
+        isOpen={showChatBot}
+        onClose={() => setShowChatBot(false)}
       />
     </div>
   );
