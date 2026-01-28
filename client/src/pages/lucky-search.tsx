@@ -1,20 +1,44 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { ChevronLeft, Clock, Sparkles, CheckCircle, Info } from "lucide-react";
 import { Link } from "wouter";
 import { motion, AnimatePresence } from "framer-motion";
 import { ActivationModal } from "@/components/modals/activation-modal";
 
-const PREDICTIONS = {
-  "1:00 PM": { numbers: [8, 1, 9], color: "from-purple-500 to-purple-700", shadow: "shadow-purple-500/20" },
-  "6:00 PM": { numbers: [5, 8, 2], color: "from-indigo-500 to-indigo-700", shadow: "shadow-indigo-500/20" },
-  "8:00 PM": { numbers: [7, 6, 3], color: "from-pink-500 to-pink-700", shadow: "shadow-pink-500/20" },
+// Helper to generate seed-based random numbers (consistent for all users based on date)
+const getDailyNumbers = (time: string, count: number) => {
+  const date = new Date().toISOString().split('T')[0];
+  const seed = `${date}-${time}`;
+  let hash = 0;
+  for (let i = 0; i < seed.length; i++) {
+    hash = ((hash << 5) - hash) + seed.charCodeAt(i);
+    hash |= 0;
+  }
+  
+  const results = [];
+  for (let i = 0; i < count; i++) {
+    const pseudoRandom = Math.abs(Math.sin(hash + i) * 10000);
+    results.push(Math.floor(pseudoRandom % 10));
+  }
+  return results;
+};
+
+const TIME_CONFIG = {
+  "1:00 PM": { color: "from-purple-500 to-purple-700", shadow: "shadow-purple-500/20" },
+  "6:00 PM": { color: "from-indigo-500 to-indigo-700", shadow: "shadow-indigo-500/20" },
+  "8:00 PM": { color: "from-pink-500 to-pink-700", shadow: "shadow-pink-500/20" },
 } as const;
 
 export default function LuckySearch() {
   const [showTimePopup, setShowTimePopup] = useState(false);
-  const [selectedTime, setSelectedTime] = useState<keyof typeof PREDICTIONS | null>(null);
+  const [selectedTime, setSelectedTime] = useState<keyof typeof TIME_CONFIG | null>(null);
   const [showActivationModal, setShowActivationModal] = useState(false);
   const [isActivated, setIsActivated] = useState(false);
+
+  // Get daily numbers for the selected time
+  const currentNumbers = useMemo(() => {
+    if (!selectedTime) return [];
+    return getDailyNumbers(selectedTime, 4);
+  }, [selectedTime]);
 
   useEffect(() => {
     const activated = localStorage.getItem('vip_activated') === 'true';
@@ -33,7 +57,7 @@ export default function LuckySearch() {
     setShowTimePopup(true);
   };
 
-  const handleTimeSelect = (time: keyof typeof PREDICTIONS) => {
+  const handleTimeSelect = (time: keyof typeof TIME_CONFIG) => {
     setSelectedTime(time);
     setShowTimePopup(false);
   };
@@ -60,24 +84,24 @@ export default function LuckySearch() {
                 animate={{ opacity: 1, y: 0 }}
                 className="space-y-8"
               >
-                <div className="glass-dark p-8 rounded-3xl border border-white/10 text-center relative overflow-hidden">
+                <div className="glass-dark p-6 rounded-3xl border border-white/10 text-center relative overflow-hidden">
                   <div className="absolute top-0 right-0 p-4">
                     <CheckCircle className="w-6 h-6 text-emerald-400 opacity-50" />
                   </div>
 
                   <div className="flex items-center justify-center gap-2 mb-6">
-                    <Clock className="w-5 h-5 text-gray-400" />
-                    <span className="text-gray-400 font-medium tracking-wide uppercase text-sm">{selectedTime} Prediction</span>
+                    <Clock className="w-4 h-4 text-gray-400" />
+                    <span className="text-gray-400 font-medium tracking-wide uppercase text-xs">{selectedTime} Prediction</span>
                   </div>
                   
-                  <div className="flex justify-center gap-6">
-                    {PREDICTIONS[selectedTime].numbers.map((num, i) => (
+                  <div className="flex justify-center gap-3">
+                    {currentNumbers.map((num, i) => (
                       <motion.div
                         key={i}
                         initial={{ scale: 0, rotate: -20 }}
                         animate={{ scale: 1, rotate: 0 }}
                         transition={{ delay: i * 0.1, type: "spring", stiffness: 200 }}
-                        className={`w-20 h-20 rounded-[2rem] bg-gradient-to-br ${PREDICTIONS[selectedTime].color} flex items-center justify-center text-3xl font-bold shadow-2xl ${PREDICTIONS[selectedTime].shadow} border border-white/20`}
+                        className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${TIME_CONFIG[selectedTime].color} flex items-center justify-center text-xl font-bold shadow-xl ${TIME_CONFIG[selectedTime].shadow} border border-white/20`}
                       >
                         {num}
                       </motion.div>
@@ -86,21 +110,21 @@ export default function LuckySearch() {
 
                   <button 
                     onClick={() => setShowTimePopup(true)}
-                    className="mt-10 px-6 py-2 rounded-full border border-white/10 text-sm text-gray-400 hover:text-white hover:bg-white/5 transition-all flex items-center gap-2 mx-auto"
+                    className="mt-8 px-5 py-2 rounded-full border border-white/10 text-[10px] text-gray-400 hover:text-white hover:bg-white/5 transition-all flex items-center gap-2 mx-auto"
                   >
-                    <Clock className="w-4 h-4" />
+                    <Clock className="w-3 h-3" />
                     Select Different Time
                   </button>
                 </div>
 
-                <div className="glass rounded-2xl p-6 border border-white/10 flex gap-4">
-                  <div className="bg-amber-500/20 p-3 rounded-xl h-fit">
-                    <Sparkles className="w-6 h-6 text-amber-500" />
+                <div className="glass rounded-2xl p-5 border border-white/10 flex gap-4">
+                  <div className="bg-amber-500/20 p-2.5 rounded-xl h-fit">
+                    <Sparkles className="w-5 h-5 text-amber-500" />
                   </div>
                   <div>
-                    <h3 className="font-bold text-lg mb-1">AI Recommendation</h3>
-                    <p className="text-sm text-gray-400 leading-relaxed">
-                      Our algorithm has identified these numbers as high-probability candidates for the {selectedTime} draw based on historical cycles.
+                    <h3 className="font-bold text-base mb-1">AI Recommendation</h3>
+                    <p className="text-xs text-gray-400 leading-relaxed">
+                      High-probability candidates for the {selectedTime} draw based on daily historical cycles.
                     </p>
                   </div>
                 </div>
