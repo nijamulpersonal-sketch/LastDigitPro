@@ -15,9 +15,12 @@ const getDailyNumbers = (time: string, count: number) => {
   }
   
   const results = [];
+  const availableNumbers = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
+  
   for (let i = 0; i < count; i++) {
     const pseudoRandom = Math.abs(Math.sin(hash + i) * 10000);
-    results.push(Math.floor(pseudoRandom % 10));
+    const index = Math.floor(pseudoRandom % availableNumbers.length);
+    results.push(availableNumbers.splice(index, 1)[0]);
   }
   return results;
 };
