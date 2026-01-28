@@ -54,8 +54,12 @@ export default function Home() {
       else if ((hour === 17 && minute >= 30) || (hour >= 18 && hour < 20)) {
         min = 350; max = 500;
       }
-      // Normal Time: Everything else up to 5:00 PM and after 8:00 PM
-      else if (hour < 17 || hour >= 20) {
+      // Night Time: After 8:00 PM
+      else if (hour >= 20) {
+        min = 10; max = 23;
+      }
+      // Normal Time: Everything else up to 5:00 PM
+      else if (hour < 17) {
         min = 50; max = 200;
       }
 
