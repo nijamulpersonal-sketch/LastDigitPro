@@ -19,8 +19,8 @@ const KNOWLEDGE_BASE = [
     response: "Chinta mat Karen, aapka refund 48 ghante (hours) mein ho jaega. Humari team is par kaam kar rahi hai. (Don't worry, your refund will be processed within 48 hours.)"
   },
   {
-    keywords: ["hi", "hello", "hey", "namaste"],
-    response: "Hello! Last Digit Pro Support mein aapka swagat hai. Main aapki kaise madad kar sakta hoon? (How can I help you today?)"
+    keywords: ["hi", "hello", "hey", "namaste", "okay", "ok", "thik hai", "achha"],
+    response: "Ji! Main aapki aur kaise madad kar sakta hoon? (How else can I help you?)"
   },
   {
     keywords: ["activation", "code", "axis code", "khul nahi raha", "locked"],
