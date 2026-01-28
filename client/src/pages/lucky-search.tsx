@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
-import { ChevronLeft, Clock, Sparkles, CheckCircle, Info } from "lucide-react";
+import { ChevronLeft, Clock, Sparkles, CheckCircle, Info, Lock } from "lucide-react";
 import { Link } from "wouter";
 import { motion, AnimatePresence } from "framer-motion";
 import { ActivationModal } from "@/components/modals/activation-modal";
@@ -26,9 +26,9 @@ const getDailyNumbers = (time: string, count: number) => {
 };
 
 const TIME_CONFIG = {
-  "1:00 PM": { color: "from-purple-500 to-purple-700", shadow: "shadow-purple-500/20" },
-  "6:00 PM": { color: "from-indigo-500 to-indigo-700", shadow: "shadow-indigo-500/20" },
-  "8:00 PM": { color: "from-pink-500 to-pink-700", shadow: "shadow-pink-500/20" },
+  "1:00 PM": { color: "from-purple-500 to-purple-700", shadow: "shadow-purple-500/20", hour: 13 },
+  "6:00 PM": { color: "from-indigo-500 to-indigo-700", shadow: "shadow-indigo-500/20", hour: 18 },
+  "8:00 PM": { color: "from-pink-500 to-pink-700", shadow: "shadow-pink-500/20", hour: 20 },
 } as const;
 
 export default function LuckySearch() {
@@ -36,6 +36,36 @@ export default function LuckySearch() {
   const [selectedTime, setSelectedTime] = useState<keyof typeof TIME_CONFIG | null>(null);
   const [showActivationModal, setShowActivationModal] = useState(false);
   const [isActivated, setIsActivated] = useState(false);
+  const [currentTime, setCurrentTime] = useState(new Date());
+
+  // Update current time every minute to keep lock/unlock logic fresh
+  useEffect(() => {
+    const timer = setInterval(() => setCurrentTime(new Date()), 60000);
+    return () => clearInterval(timer);
+  }, []);
+
+  // Logic to determine which slots are unlocked
+  const getSlotStatus = (timeKey: keyof typeof TIME_CONFIG) => {
+    const now = currentTime;
+    const hours = now.getHours();
+    
+    // 1:00 PM (13:00) Slot: Opens from 00:00 to 13:00
+    if (timeKey === "1:00 PM") {
+      return hours < 13;
+    }
+    
+    // 6:00 PM (18:00) Slot: Opens from 13:00 to 18:00
+    if (timeKey === "6:00 PM") {
+      return hours >= 13 && hours < 18;
+    }
+    
+    // 8:00 PM (20:00) Slot: Opens from 18:00 to 20:00
+    if (timeKey === "8:00 PM") {
+      return hours >= 18 && hours < 20;
+    }
+
+    return false;
+  };
 
   // Get daily numbers for the selected time
   const currentNumbers = useMemo(() => {
@@ -61,8 +91,10 @@ export default function LuckySearch() {
   };
 
   const handleTimeSelect = (time: keyof typeof TIME_CONFIG) => {
-    setSelectedTime(time);
-    setShowTimePopup(false);
+    if (getSlotStatus(time)) {
+      setSelectedTime(time);
+      setShowTimePopup(false);
+    }
   };
 
   return (
@@ -188,24 +220,24 @@ export default function LuckySearch() {
                 </div>
 
                 <div className="space-y-5">
-                  <button
-                    onClick={() => handleTimeSelect("1:00 PM")}
-                    className="w-full py-5 rounded-full bg-[#a855f7] text-white font-extrabold text-xl shadow-[0_10px_20px_-5px_rgba(168,85,247,0.4)] hover:shadow-[0_15px_25px_-5px_rgba(168,85,247,0.5)] transition-all active:scale-95"
-                  >
-                    1:00 PM
-                  </button>
-                  <button
-                    onClick={() => handleTimeSelect("6:00 PM")}
-                    className="w-full py-5 rounded-full bg-[#6366f1] text-white font-extrabold text-xl shadow-[0_10px_20px_-5px_rgba(99,102,241,0.4)] hover:shadow-[0_15px_25px_-5px_rgba(99,102,241,0.5)] transition-all active:scale-95"
-                  >
-                    6:00 PM
-                  </button>
-                  <button
-                    onClick={() => handleTimeSelect("8:00 PM")}
-                    className="w-full py-5 rounded-full bg-[#ec4899] text-white font-extrabold text-xl shadow-[0_10px_20px_-5px_rgba(236,72,153,0.4)] hover:shadow-[0_15px_25px_-5px_rgba(236,72,153,0.5)] transition-all active:scale-95"
-                  >
-                    8:00 PM
-                  </button>
+                  {(Object.keys(TIME_CONFIG) as Array<keyof typeof TIME_CONFIG>).map((time) => {
+                    const isUnlocked = getSlotStatus(time);
+                    return (
+                      <button
+                        key={time}
+                        disabled={!isUnlocked}
+                        onClick={() => handleTimeSelect(time)}
+                        className={`w-full py-5 rounded-full text-white font-extrabold text-xl shadow-lg transition-all active:scale-95 flex items-center justify-center gap-3 ${
+                          isUnlocked 
+                            ? `bg-gradient-to-r ${TIME_CONFIG[time].color} shadow-${TIME_CONFIG[time].color.split('-')[1]}-500/40` 
+                            : 'bg-gray-300 shadow-none cursor-not-allowed opacity-80'
+                        }`}
+                      >
+                        {time}
+                        {!isUnlocked && <Lock className="w-5 h-5" />}
+                      </button>
+                    );
+                  })}
                 </div>
                 
                 <button 
