@@ -12,7 +12,8 @@ import {
   MessageCircle, 
   Lock,
   UserCircle,
-  MessageSquare
+  MessageSquare,
+  Users
 } from "lucide-react";
 import { useLocation } from "wouter";
 import { PrivacyPolicyModal } from "@/components/modals/privacy-policy-modal";
@@ -30,12 +31,41 @@ export default function Home() {
   const [showChatBot, setShowChatBot] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<'first-time' | 'regular' | null>(null);
   const [user, setUser] = useState<any>(null);
+  const [activeUsers, setActiveUsers] = useState(124);
 
   useEffect(() => {
     const savedUser = localStorage.getItem('user_profile');
     if (savedUser) {
       setUser(JSON.parse(savedUser));
     }
+
+    const updateActiveUsers = () => {
+      const now = new Date();
+      const hour = now.getHours();
+      const minute = now.getMinutes();
+      
+      let min = 10, max = 150;
+
+      // Peak Time 1: 12:00 PM to 12:56 PM
+      if (hour === 12 && minute <= 56) {
+        min = 350; max = 500;
+      } 
+      // Peak Time 2: 5:30 PM to 8:00 PM
+      else if ((hour === 17 && minute >= 30) || (hour >= 18 && hour < 20)) {
+        min = 350; max = 500;
+      }
+      // Normal Time: Everything else up to 5:00 PM and after 8:00 PM
+      else if (hour < 17 || hour >= 20) {
+        min = 50; max = 200;
+      }
+
+      const randomUsers = Math.floor(Math.random() * (max - min + 1)) + min;
+      setActiveUsers(randomUsers);
+    };
+
+    updateActiveUsers();
+    const interval = setInterval(updateActiveUsers, 5000); // Update every 5 seconds
+    return () => clearInterval(interval);
   }, []);
 
   const handlePlanSelect = (plan: 'first-time' | 'regular') => {
@@ -77,6 +107,16 @@ export default function Home() {
                 LAST DIGIT PRO
               </h1>
             </div>
+
+            {/* Live Active Users Counter */}
+            <div className="flex items-center gap-1.5 bg-emerald-500/10 border border-emerald-500/20 px-3 py-1 rounded-full animate-pulse">
+              <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full" />
+              <span className="text-[10px] font-bold text-emerald-400 uppercase tracking-widest flex items-center gap-1">
+                <Users className="w-3 h-3" />
+                {activeUsers} Live
+              </span>
+            </div>
+
             <button 
               onClick={() => setShowProfile(true)}
               className="p-1.5 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all flex items-center gap-2 group"
