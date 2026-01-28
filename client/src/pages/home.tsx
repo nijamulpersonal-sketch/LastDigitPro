@@ -55,11 +55,13 @@ export default function Home() {
       <div className="max-w-md mx-auto px-4 pt-4">
         {/* Header - Compact & Premium */}
         <div className="text-center mb-6">
-          <div className="glass rounded-2xl px-4 py-3 mb-2 gold-glow border-amber-400/20 flex flex-col items-center">
-            <img src={logo} alt="Last Digit Pro Logo" className="w-12 h-12 mb-2 drop-shadow-[0_0_8px_rgba(251,191,36,0.3)]" />
-            <h1 className="text-2xl font-black bg-gradient-to-r from-amber-300 via-yellow-500 to-amber-600 bg-clip-text text-transparent tracking-tighter">
-              LAST DIGIT PRO
-            </h1>
+          <div className="glass rounded-2xl px-4 py-3 mb-2 gold-glow border-amber-400/20">
+            <div className="flex items-center justify-center gap-3">
+              <img src={logo} alt="Last Digit Pro Logo" className="w-10 h-10 drop-shadow-[0_0_8px_rgba(251,191,36,0.3)]" />
+              <h1 className="text-2xl font-black bg-gradient-to-r from-amber-300 via-yellow-500 to-amber-600 bg-clip-text text-transparent tracking-tighter">
+                LAST DIGIT PRO
+              </h1>
+            </div>
             <div className="flex justify-center items-center gap-2 mt-1">
               <div className="flex items-center">
                 <ShieldCheck className="w-3 h-3 text-emerald-400 mr-1" />
