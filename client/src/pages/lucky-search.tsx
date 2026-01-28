@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { ChevronLeft, Clock, Sparkles, CheckCircle, Info } from "lucide-react";
 import { Link } from "wouter";
 import { motion, AnimatePresence } from "framer-motion";
+import { ActivationModal } from "@/components/modals/activation-modal";
 
 const PREDICTIONS = {
   "1:00 PM": { numbers: [8, 1, 9], color: "from-purple-500 to-purple-700", shadow: "shadow-purple-500/20" },
@@ -12,14 +13,25 @@ const PREDICTIONS = {
 export default function LuckySearch() {
   const [showTimePopup, setShowTimePopup] = useState(false);
   const [selectedTime, setSelectedTime] = useState<keyof typeof PREDICTIONS | null>(null);
+  const [showActivationModal, setShowActivationModal] = useState(false);
+  const [isActivated, setIsActivated] = useState(false);
 
   useEffect(() => {
-    // Show popup if activated
     const activated = localStorage.getItem('vip_activated') === 'true';
-    if (activated) {
+    setIsActivated(activated);
+    if (!activated) {
+      setShowActivationModal(true);
+    } else {
       setShowTimePopup(true);
     }
   }, []);
+
+  const handleActivationSuccess = () => {
+    setIsActivated(true);
+    localStorage.setItem('vip_activated', 'true');
+    setShowActivationModal(false);
+    setShowTimePopup(true);
+  };
 
   const handleTimeSelect = (time: keyof typeof PREDICTIONS) => {
     setSelectedTime(time);
@@ -40,72 +52,97 @@ export default function LuckySearch() {
           </h1>
         </header>
 
-        {selectedTime ? (
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="space-y-8"
-          >
-            <div className="glass-dark p-8 rounded-3xl border border-white/10 text-center relative overflow-hidden">
-              <div className="absolute top-0 right-0 p-4">
-                <CheckCircle className="w-6 h-6 text-emerald-400 opacity-50" />
-              </div>
-
-              <div className="flex items-center justify-center gap-2 mb-6">
-                <Clock className="w-5 h-5 text-gray-400" />
-                <span className="text-gray-400 font-medium tracking-wide uppercase text-sm">{selectedTime} Prediction</span>
-              </div>
-              
-              <div className="flex justify-center gap-6">
-                {PREDICTIONS[selectedTime].numbers.map((num, i) => (
-                  <motion.div
-                    key={i}
-                    initial={{ scale: 0, rotate: -20 }}
-                    animate={{ scale: 1, rotate: 0 }}
-                    transition={{ delay: i * 0.1, type: "spring", stiffness: 200 }}
-                    className={`w-20 h-20 rounded-[2rem] bg-gradient-to-br ${PREDICTIONS[selectedTime].color} flex items-center justify-center text-3xl font-bold shadow-2xl ${PREDICTIONS[selectedTime].shadow} border border-white/20`}
-                  >
-                    {num}
-                  </motion.div>
-                ))}
-              </div>
-
-              <button 
-                onClick={() => setShowTimePopup(true)}
-                className="mt-10 px-6 py-2 rounded-full border border-white/10 text-sm text-gray-400 hover:text-white hover:bg-white/5 transition-all flex items-center gap-2 mx-auto"
+        {isActivated ? (
+          <>
+            {selectedTime ? (
+              <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="space-y-8"
               >
-                <Clock className="w-4 h-4" />
-                Select Different Time
-              </button>
-            </div>
+                <div className="glass-dark p-8 rounded-3xl border border-white/10 text-center relative overflow-hidden">
+                  <div className="absolute top-0 right-0 p-4">
+                    <CheckCircle className="w-6 h-6 text-emerald-400 opacity-50" />
+                  </div>
 
-            <div className="glass rounded-2xl p-6 border border-white/10 flex gap-4">
-              <div className="bg-amber-500/20 p-3 rounded-xl h-fit">
-                <Sparkles className="w-6 h-6 text-amber-500" />
+                  <div className="flex items-center justify-center gap-2 mb-6">
+                    <Clock className="w-5 h-5 text-gray-400" />
+                    <span className="text-gray-400 font-medium tracking-wide uppercase text-sm">{selectedTime} Prediction</span>
+                  </div>
+                  
+                  <div className="flex justify-center gap-6">
+                    {PREDICTIONS[selectedTime].numbers.map((num, i) => (
+                      <motion.div
+                        key={i}
+                        initial={{ scale: 0, rotate: -20 }}
+                        animate={{ scale: 1, rotate: 0 }}
+                        transition={{ delay: i * 0.1, type: "spring", stiffness: 200 }}
+                        className={`w-20 h-20 rounded-[2rem] bg-gradient-to-br ${PREDICTIONS[selectedTime].color} flex items-center justify-center text-3xl font-bold shadow-2xl ${PREDICTIONS[selectedTime].shadow} border border-white/20`}
+                      >
+                        {num}
+                      </motion.div>
+                    ))}
+                  </div>
+
+                  <button 
+                    onClick={() => setShowTimePopup(true)}
+                    className="mt-10 px-6 py-2 rounded-full border border-white/10 text-sm text-gray-400 hover:text-white hover:bg-white/5 transition-all flex items-center gap-2 mx-auto"
+                  >
+                    <Clock className="w-4 h-4" />
+                    Select Different Time
+                  </button>
+                </div>
+
+                <div className="glass rounded-2xl p-6 border border-white/10 flex gap-4">
+                  <div className="bg-amber-500/20 p-3 rounded-xl h-fit">
+                    <Sparkles className="w-6 h-6 text-amber-500" />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-lg mb-1">AI Recommendation</h3>
+                    <p className="text-sm text-gray-400 leading-relaxed">
+                      Our algorithm has identified these numbers as high-probability candidates for the {selectedTime} draw based on historical cycles.
+                    </p>
+                  </div>
+                </div>
+              </motion.div>
+            ) : (
+              <div className="glass-dark p-12 rounded-[3rem] border border-white/10 text-center space-y-6">
+                <div className="w-20 h-20 bg-purple-500/20 rounded-full flex items-center justify-center mx-auto border border-purple-500/30">
+                  <Sparkles className="w-10 h-10 text-purple-400" />
+                </div>
+                <h2 className="text-xl font-bold">Select Draw Time</h2>
+                <p className="text-gray-400">Please select a time to view your personalized predictions.</p>
+                <button 
+                  onClick={() => setShowTimePopup(true)}
+                  className="w-full py-4 rounded-2xl bg-gradient-to-r from-purple-500 to-pink-600 font-bold shadow-lg shadow-purple-500/20"
+                >
+                  Choose Time
+                </button>
               </div>
-              <div>
-                <h3 className="font-bold text-lg mb-1">AI Recommendation</h3>
-                <p className="text-sm text-gray-400 leading-relaxed">
-                  Our algorithm has identified these numbers as high-probability candidates for the {selectedTime} draw based on historical cycles.
-                </p>
-              </div>
-            </div>
-          </motion.div>
+            )}
+          </>
         ) : (
           <div className="glass-dark p-12 rounded-[3rem] border border-white/10 text-center space-y-6">
-            <div className="w-20 h-20 bg-purple-500/20 rounded-full flex items-center justify-center mx-auto border border-purple-500/30">
-              <Sparkles className="w-10 h-10 text-purple-400" />
+            <div className="w-20 h-20 bg-slate-800 rounded-full flex items-center justify-center mx-auto border border-slate-700">
+              <Sparkles className="w-10 h-10 text-slate-500" />
             </div>
-            <h2 className="text-xl font-bold">Select Draw Time</h2>
-            <p className="text-gray-400">Please select a time to view your personalized predictions.</p>
+            <h2 className="text-xl font-bold text-slate-300">Locked Feature</h2>
+            <p className="text-slate-500">This feature requires VIP activation. Please click below to activate.</p>
             <button 
-              onClick={() => setShowTimePopup(true)}
-              className="w-full py-4 rounded-2xl bg-gradient-to-r from-purple-500 to-pink-600 font-bold shadow-lg shadow-purple-500/20"
+              onClick={() => setShowActivationModal(true)}
+              className="w-full py-4 rounded-2xl bg-slate-800 text-slate-300 font-bold border border-slate-700"
             >
-              Choose Time
+              Unlock Now
             </button>
           </div>
         )}
+
+        {/* Activation Modal */}
+        <ActivationModal 
+          isOpen={showActivationModal}
+          onClose={() => setShowActivationModal(false)}
+          onSuccess={handleActivationSuccess}
+        />
 
         {/* Time Selection Popup */}
         <AnimatePresence>
