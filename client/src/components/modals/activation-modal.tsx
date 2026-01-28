@@ -9,17 +9,69 @@ interface ActivationModalProps {
   onSuccess: () => void;
 }
 
+// Predefined list of unique access codes with their durations
+const VALID_CODES: Record<string, { days: number }> = {
+  "NSK777": { days: 12 },
+  "NSK888": { days: 12 },
+  "NSK999": { days: 12 },
+  "NSK111": { days: 12 },
+  "NSK222": { days: 12 },
+  "VIP777": { days: 12 },
+  "VIP888": { days: 12 },
+  "VIP999": { days: 12 },
+  "PRO123": { days: 30 },
+  "PRO456": { days: 30 },
+  "PRO789": { days: 30 },
+  "LUCKY12": { days: 12 },
+  "LUCKY30": { days: 30 },
+  "GOLD77": { days: 30 },
+  "SILVER12": { days: 12 },
+  "NSK_VIP_01": { days: 12 },
+  "NSK_VIP_02": { days: 12 },
+  "NSK_VIP_03": { days: 30 },
+  "NSK_VIP_04": { days: 30 },
+  "NSK_VIP_05": { days: 12 },
+};
+
 export function ActivationModal({ isOpen, onClose, onSuccess }: ActivationModalProps) {
   const [code, setCode] = useState("");
   const { toast } = useToast();
 
   const handleActivate = () => {
-    // Mock activation code check
-    if (code.trim() === "VIP777") {
+    const inputCode = code.trim().toUpperCase();
+    const codeData = VALID_CODES[inputCode];
+
+    if (codeData) {
+      // Check if code has already been used on this device
+      const usedCodes = JSON.parse(localStorage.getItem('used_activation_codes') || '[]');
+      
+      if (usedCodes.includes(inputCode)) {
+        toast({
+          variant: "destructive",
+          title: "Code Already Used",
+          description: "This access code has already been activated on this device.",
+        });
+        return;
+      }
+
+      // Calculate expiry date
+      const expiryDate = new Date();
+      expiryDate.setDate(expiryDate.getDate() + codeData.days);
+
+      // Save activation state
+      localStorage.setItem('vip_activated', 'true');
+      localStorage.setItem('vip_expiry', expiryDate.toISOString());
+      localStorage.setItem('vip_code_used', inputCode);
+      
+      // Mark code as used on this device
+      usedCodes.push(inputCode);
+      localStorage.setItem('used_activation_codes', JSON.stringify(usedCodes));
+
       onSuccess();
+      
       toast({
         title: "Activation Successful!",
-        description: "Your premium features are now unlocked.",
+        description: `Premium unlocked for ${codeData.days} days. Expiry: ${expiryDate.toLocaleDateString()}`,
       });
     } else {
       toast({
@@ -38,7 +90,6 @@ export function ActivationModal({ isOpen, onClose, onSuccess }: ActivationModalP
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="bg-[#0f172a] border-slate-800 text-white max-w-sm p-8 rounded-[2.5rem] gap-0 shadow-2xl overflow-hidden">
         <div className="text-center space-y-6">
-          {/* Success Icon */}
           <div className="relative">
             <div className="w-20 h-20 bg-emerald-500 rounded-full flex items-center justify-center mx-auto shadow-lg shadow-emerald-500/20">
               <CheckCircle2 className="w-12 h-12 text-white" />
@@ -52,7 +103,6 @@ export function ActivationModal({ isOpen, onClose, onSuccess }: ActivationModalP
             </p>
           </div>
 
-          {/* Info Box */}
           <div className="bg-slate-900/50 border border-slate-800 rounded-2xl p-4 flex items-center gap-3">
             <div className="w-5 h-5 bg-amber-500/20 rounded-full flex items-center justify-center flex-shrink-0">
               <span className="text-amber-500 text-xs font-bold">i</span>
@@ -62,7 +112,6 @@ export function ActivationModal({ isOpen, onClose, onSuccess }: ActivationModalP
             </p>
           </div>
 
-          {/* WhatsApp Button */}
           <button 
             onClick={handleWhatsAppRedirect}
             className="w-full py-4 rounded-2xl bg-gradient-to-r from-emerald-500 to-emerald-600 text-white font-bold text-lg flex items-center justify-center gap-3 shadow-lg shadow-emerald-500/20 hover:opacity-90 transition-all active:scale-[0.98]"
@@ -77,7 +126,6 @@ export function ActivationModal({ isOpen, onClose, onSuccess }: ActivationModalP
             <div className="h-px bg-slate-800 flex-1" />
           </div>
 
-          {/* Code Input */}
           <div className="space-y-4">
             <input 
               type="text" 

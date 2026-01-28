@@ -75,11 +75,23 @@ export default function LuckySearch() {
 
   useEffect(() => {
     const activated = localStorage.getItem('vip_activated') === 'true';
-    setIsActivated(activated);
-    if (!activated) {
+    const expiryStr = localStorage.getItem('vip_expiry');
+    
+    if (activated && expiryStr) {
+      const expiry = new Date(expiryStr);
+      if (new Date() > expiry) {
+        // VIP Expired
+        localStorage.removeItem('vip_activated');
+        localStorage.removeItem('vip_expiry');
+        localStorage.removeItem('vip_code_used');
+        setIsActivated(false);
+        setShowActivationModal(true);
+      } else {
+        setIsActivated(true);
+        setShowTimePopup(true);
+      }
+    } else if (!activated) {
       setShowActivationModal(true);
-    } else {
-      setShowTimePopup(true);
     }
   }, []);
 
