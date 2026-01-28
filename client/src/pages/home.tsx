@@ -92,10 +92,13 @@ export default function Home() {
           </div>
 
           <div className="glass rounded-2xl px-4 py-3 mb-2 gold-glow border-amber-400/20">
-            <h1 className="text-2xl font-black bg-gradient-to-r from-amber-300 via-yellow-500 to-amber-600 bg-clip-text text-transparent tracking-tighter uppercase">
-              Premium Dashboard
-            </h1>
-            <div className="flex justify-center items-center gap-2 mt-1">
+            <div className="flex items-center justify-center gap-3 mb-2">
+              <img src={logo} alt="Last Digit Pro Logo" className="w-10 h-10 rounded-full object-cover border border-amber-400/30 drop-shadow-[0_0_8px_rgba(251,191,36,0.3)]" />
+              <h1 className="text-2xl font-black bg-gradient-to-r from-amber-300 via-yellow-500 to-amber-600 bg-clip-text text-transparent tracking-tighter">
+                LAST DIGIT PRO
+              </h1>
+            </div>
+            <div className="flex justify-center items-center gap-2">
               <div className="flex items-center">
                 <ShieldCheck className="w-3 h-3 text-emerald-400 mr-1" />
                 <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Secure</span>
