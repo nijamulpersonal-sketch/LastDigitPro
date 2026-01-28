@@ -1,4 +1,4 @@
-import { CheckCircle, CreditCard, X } from "lucide-react";
+import { CheckCircle, CreditCard, X, ShieldCheck } from "lucide-react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 
 interface SubscriptionModalProps {
@@ -12,8 +12,12 @@ export function SubscriptionModal({ isOpen, onClose, planType }: SubscriptionMod
   
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="glass-dark border-amber-500/30 text-white max-w-sm p-6 rounded-3xl gap-0">
-        <div className="text-center mb-6">
+      <DialogContent className="glass-dark border-amber-500/30 text-white max-w-sm p-6 rounded-3xl gap-0 overflow-visible">
+        <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-amber-500 text-slate-900 text-[10px] font-black px-4 py-1 rounded-full shadow-lg shadow-amber-500/30 z-50 flex items-center gap-1 border border-amber-400">
+          <ShieldCheck className="w-3 h-3" />
+          TRUSTED & SECURE
+        </div>
+        <div className="text-center mb-6 pt-4">
           <div className="bg-gradient-to-br from-amber-400 to-amber-600 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg shadow-amber-500/20">
             <CreditCard className="w-8 h-8 text-white" />
           </div>
