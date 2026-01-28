@@ -256,7 +256,7 @@ export default function Home() {
               </div>
               <h3 className="font-semibold text-white">Dear Digits</h3>
             </div>
-            <p className="text-xs text-gray-400">15-day chart analysis</p>
+            <p className="text-xs text-gray-400">20-day chart analysis</p>
           </div>
 
           {/* Lottery Fax Card */}
