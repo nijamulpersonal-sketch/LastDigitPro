@@ -13,7 +13,10 @@ import {
   Lock,
   UserCircle,
   MessageSquare,
-  Users
+  Users,
+  Home as HomeIcon,
+  History,
+  CreditCard
 } from "lucide-react";
 import { useLocation } from "wouter";
 import { PrivacyPolicyModal } from "@/components/modals/privacy-policy-modal";
@@ -95,11 +98,11 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen pb-20">
+    <div className="min-h-screen pb-24 bg-slate-900 selection:bg-amber-500/30">
       {/* AI Chat Bot Floating Button */}
       <button 
         onClick={() => setShowChatBot(true)}
-        className="fixed bottom-6 right-6 z-50 chatbot-btn flex items-center gap-2 px-5 py-3 rounded-full font-semibold transition-all duration-300 text-white bg-gradient-to-r from-purple-600 to-indigo-600 shadow-lg shadow-purple-500/30 hover:scale-105 active:scale-95"
+        className="fixed bottom-28 right-6 z-50 chatbot-btn flex items-center gap-2 px-5 py-3 rounded-full font-semibold transition-all duration-300 text-white bg-gradient-to-r from-purple-600 to-indigo-600 shadow-lg shadow-purple-500/30 hover:scale-105 active:scale-95"
       >
         <MessageSquare className="w-5 h-5" />
         <span>Support</span>
@@ -155,22 +158,12 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Compact VIP Access Card - Premium Glassmorphism Edition */}
+        {/* Compact VIP Access Card */}
         <div className="relative overflow-hidden glass-dark rounded-[1.5rem] p-4 mb-6 border border-white/10 shadow-[0_0_20px_rgba(251,191,36,0.1)]">
-          {/* Animated Glaze Effect */}
           <div className="absolute -inset-full h-[300%] w-[300%] bg-[linear-gradient(45deg,transparent_25%,rgba(255,255,255,0.05)_50%,transparent_75%)] animate-[shimmer_5s_infinite] pointer-events-none"></div>
           
-          {/* Subtle Glow Points */}
           <div className="absolute top-0 right-0 w-24 h-24 bg-amber-500/10 blur-[40px] -z-10"></div>
-          <div className="absolute bottom-0 left-0 w-24 h-24 bg-purple-500/10 blur-[40px] -z-10"></div>
-
-          {/* Trusted Badge */}
-          <div className="absolute -top-1 -right-1 z-20">
-            <div className="bg-gradient-to-r from-amber-400 to-yellow-500 text-black text-[7px] font-black px-2 py-0.5 rounded-full shadow-[0_0_10px_rgba(251,191,36,0.3)] uppercase tracking-wider">
-              Trusted
-            </div>
-          </div>
-
+          
           <div className="flex items-center gap-2 mb-4 relative z-10">
             <div className="p-2 bg-gradient-to-br from-amber-400 to-amber-600 rounded-xl shadow-lg shadow-amber-500/20">
               <Crown className="w-5 h-5 text-white" />
@@ -203,22 +196,10 @@ export default function Home() {
 
           <div className="flex gap-1.5 mb-3 relative z-10">
             {['01:00 PM', '06:00 PM', '08:00 PM'].map((time) => (
-              <div key={time} className="flex-1 py-1.5 rounded-lg bg-white/[0.03] border border-white/5 text-emerald-400 font-bold text-[9px] text-center shadow-inner group hover:bg-white/[0.08] transition-colors">
+              <div key={time} className="flex-1 py-1.5 rounded-lg bg-white/[0.03] border border-white/5 text-emerald-400 font-bold text-[9px] text-center shadow-inner">
                 {time}
               </div>
             ))}
-          </div>
-
-          <div className="bg-gradient-to-r from-rose-500/10 to-transparent border-l-2 border-rose-500 rounded-r-lg p-2.5 mb-4 relative z-10">
-            <div className="flex gap-2 items-center">
-              <div className="p-1 bg-rose-500/20 rounded-md">
-                <ShieldCheck className="w-3.5 h-3.5 text-rose-500" />
-              </div>
-              <p className="text-[9px] text-gray-300 leading-tight">
-                <span className="text-rose-400 font-bold uppercase block mb-0.5">Refund Guarantee</span>
-                If predictions miss, payment is refunded.
-              </p>
-            </div>
           </div>
 
           <button 
@@ -226,116 +207,85 @@ export default function Home() {
             className="relative w-full py-3 rounded-xl bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-600 text-slate-900 font-black text-xs shadow-[0_4px_15px_rgba(251,191,36,0.2)] hover:shadow-[0_6px_20px_rgba(251,191,36,0.4)] active:scale-[0.98] transition-all duration-300 uppercase tracking-widest overflow-hidden group"
           >
             <span className="relative z-10">Unlock VIP Access</span>
-            <div className="absolute top-0 -left-full w-full h-full bg-gradient-to-r from-transparent via-white/40 to-transparent group-hover:animate-[shimmer_1.5s_infinite]"></div>
           </button>
         </div>
 
         {/* Features Grid */}
         <div className="grid grid-cols-2 gap-4 mb-8">
-          {/* Lucky Search Card */}
-          <div 
-            onClick={() => setLocation('/lucky-search')}
-            className="glass card-hover rounded-2xl p-4 cursor-pointer relative group"
-          >
-            <div className="absolute top-3 right-3">
-              <Lock className="w-4 h-4 text-amber-400" />
-            </div>
+          <div onClick={() => setLocation('/lucky-search')} className="glass card-hover rounded-2xl p-4 cursor-pointer relative group">
+            <div className="absolute top-3 right-3"><Lock className="w-4 h-4 text-amber-400" /></div>
             <div className="flex items-center gap-3 mb-2">
-              <div className="bg-gradient-to-br from-purple-500 to-purple-700 p-2 rounded-lg shadow-lg shadow-purple-500/20">
-                <Search className="w-5 h-5 text-white" />
-              </div>
+              <div className="bg-gradient-to-br from-purple-500 to-purple-700 p-2 rounded-lg"><Search className="w-5 h-5 text-white" /></div>
               <h3 className="font-semibold text-white">Lucky Search</h3>
             </div>
-            <p className="text-xs text-gray-400">VIP prediction analytics tool</p>
+            <p className="text-xs text-gray-400">VIP prediction tool</p>
           </div>
 
-          {/* Dear Digits Card */}
-          <div 
-            onClick={() => setLocation('/dear-digits')}
-            className="glass card-hover rounded-2xl p-4 cursor-pointer"
-          >
+          <div onClick={() => setLocation('/dear-digits')} className="glass card-hover rounded-2xl p-4 cursor-pointer">
             <div className="flex items-center gap-3 mb-2">
-              <div className="bg-gradient-to-br from-cyan-500 to-blue-600 p-2 rounded-lg shadow-lg shadow-blue-500/20">
-                <TrendingUp className="w-5 h-5 text-white" />
-              </div>
+              <div className="bg-gradient-to-br from-cyan-500 to-blue-600 p-2 rounded-lg"><TrendingUp className="w-5 h-5 text-white" /></div>
               <h3 className="font-semibold text-white">Dear Digits</h3>
             </div>
             <p className="text-xs text-gray-400">20-day chart analysis</p>
-          </div>
-
-          {/* Lottery Fax Card */}
-          <div 
-            onClick={() => window.open('https://lotterysambad.one/', '_blank')}
-            className="glass card-hover rounded-2xl p-4 cursor-pointer"
-          >
-            <div className="flex items-center gap-3 mb-2">
-              <div className="bg-gradient-to-br from-pink-500 to-rose-600 p-2 rounded-lg shadow-lg shadow-rose-500/20">
-                <FileText className="w-5 h-5 text-white" />
-              </div>
-              <h3 className="font-semibold text-white">Lottery Fax</h3>
-            </div>
-            <p className="text-xs text-gray-400">Official results archive</p>
-          </div>
-
-          {/* Settings Card */}
-          <div onClick={handleSettingsOpen} className="glass card-hover rounded-2xl p-4 cursor-pointer">
-            <div className="flex items-center gap-3 mb-2">
-              <div className="bg-gradient-to-br from-gray-500 to-gray-700 p-2 rounded-lg shadow-lg">
-                <Settings className="w-5 h-5 text-white" />
-              </div>
-              <h3 className="font-semibold text-white">Settings</h3>
-            </div>
-            <p className="text-xs text-gray-400">App preferences</p>
           </div>
         </div>
 
         {/* Refund Guarantee */}
         <div className="glass rounded-2xl p-5 mb-6 border border-rose-500/30">
           <div className="flex items-start gap-3">
-            <div className="bg-gradient-to-br from-rose-500 to-pink-600 p-2 rounded-full shadow-lg shadow-rose-500/20">
-              <ShieldCheck className="w-5 h-5 text-white" />
-            </div>
+            <div className="bg-gradient-to-br from-rose-500 to-pink-600 p-2 rounded-full"><ShieldCheck className="w-5 h-5 text-white" /></div>
             <div>
               <h3 className="font-bold text-white mb-1">100% Refund Guarantee</h3>
-              <p className="text-sm text-gray-300">If our 3 daily predictions miss the target, we'll refund your payment immediately. No questions asked.</p>
+              <p className="text-sm text-gray-300">Predictions miss, payment refunded.</p>
             </div>
           </div>
         </div>
-
-        {/* Footer Note */}
-        <div className="text-center pb-8">
-          <p className="text-xs text-gray-500">This app provides analytical insights for informational purposes only. Always verify with official sources.</p>
-        </div>
       </div>
 
+      {/* Premium Bottom Navigation */}
+      <nav className="fixed bottom-0 left-0 right-0 z-50 px-6 pb-6 pt-2 pointer-events-none">
+        <div className="max-w-md mx-auto pointer-events-auto">
+          <div className="glass-dark border border-white/10 rounded-[2rem] p-2 shadow-[0_-10px_40px_rgba(0,0,0,0.5)] backdrop-blur-2xl flex items-center justify-between relative overflow-hidden">
+            <div className="absolute -inset-full h-[300%] w-[300%] bg-[linear-gradient(45deg,transparent_25%,rgba(255,255,255,0.03)_50%,transparent_75%)] animate-[shimmer_8s_infinite] pointer-events-none"></div>
+
+            <button className="flex-1 flex flex-col items-center justify-center gap-1 py-2 group/nav relative">
+              <div className="p-2 rounded-2xl bg-amber-500/10 text-amber-500">
+                <HomeIcon className="w-5 h-5" />
+              </div>
+              <span className="text-[10px] font-bold uppercase tracking-tighter text-amber-500">Home</span>
+              <div className="absolute -bottom-1 w-1 h-1 bg-amber-500 rounded-full shadow-[0_0_10px_#f59e0b]"></div>
+            </button>
+
+            <button className="flex-1 flex flex-col items-center justify-center gap-1 py-2 opacity-50 hover:opacity-100 transition-all">
+              <div className="p-2 rounded-2xl bg-white/5 text-gray-400">
+                <History className="w-5 h-5" />
+              </div>
+              <span className="text-[10px] font-bold uppercase tracking-tighter text-gray-400">History</span>
+            </button>
+
+            <button className="flex-1 flex flex-col items-center justify-center gap-1 py-2 opacity-50 hover:opacity-100 transition-all">
+              <div className="p-2 rounded-2xl bg-white/5 text-gray-400">
+                <CreditCard className="w-5 h-5" />
+              </div>
+              <span className="text-[10px] font-bold uppercase tracking-tighter text-gray-400">Bank</span>
+            </button>
+
+            <button onClick={handleSettingsOpen} className="flex-1 flex flex-col items-center justify-center gap-1 py-2 opacity-50 hover:opacity-100 transition-all">
+              <div className="p-2 rounded-2xl bg-white/5 text-gray-400">
+                <Settings className="w-5 h-5" />
+              </div>
+              <span className="text-[10px] font-bold uppercase tracking-tighter text-gray-400">Settings</span>
+            </button>
+          </div>
+        </div>
+      </nav>
+
       {/* Modals */}
-      <SettingsModal 
-        isOpen={showSettings} 
-        onClose={handleSettingsClose} 
-        onOpenPrivacy={handlePrivacyOpen} 
-      />
-      
-      <PrivacyPolicyModal 
-        isOpen={showPrivacy} 
-        onClose={handlePrivacyClose} 
-      />
-      
-      <SubscriptionModal 
-        isOpen={showSubscription} 
-        onClose={() => setShowSubscription(false)} 
-        planType={selectedPlan}
-      />
-
-      <ProfileModal
-        isOpen={showProfile}
-        onClose={() => setShowProfile(false)}
-        onUpdate={handleProfileUpdate}
-      />
-
-      <ChatBotModal
-        isOpen={showChatBot}
-        onClose={() => setShowChatBot(false)}
-      />
+      <SettingsModal isOpen={showSettings} onClose={handleSettingsClose} onOpenPrivacy={handlePrivacyOpen} />
+      <PrivacyPolicyModal isOpen={showPrivacy} onClose={handlePrivacyClose} />
+      <SubscriptionModal isOpen={showSubscription} onClose={() => setShowSubscription(false)} planType={selectedPlan} />
+      <ProfileModal isOpen={showProfile} onClose={() => setShowProfile(false)} onUpdate={handleProfileUpdate} />
+      <ChatBotModal isOpen={showChatBot} onClose={() => setShowChatBot(false)} />
     </div>
   );
 }
