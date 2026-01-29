@@ -5,9 +5,10 @@ import { Link } from "wouter";
 // Generate mock data for the last 20 days
 const generateMockData = () => {
   const data = [];
-  const baseDate = new Date(); // Using today's date for accurate "Morning + 5" logic
+  const baseDate = new Date(); // Using today's date for accurate calculation
   
   const values = [
+    { mor: "5", day: "-", evn: "-" }, // Today (as per screenshot logic)
     { mor: "5", day: "2", evn: "6" },
     { mor: "7", day: "0", evn: "0" },
     { mor: "-", day: "-", evn: "-" },
@@ -27,7 +28,6 @@ const generateMockData = () => {
     { mor: "4", day: "7", evn: "0" },
     { mor: "7", day: "1", evn: "2" },
     { mor: "8", day: "2", evn: "7" },
-    { mor: "2", day: "9", evn: "9" },
   ];
 
   for (let i = 0; i < 20; i++) {
