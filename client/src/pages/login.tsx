@@ -167,10 +167,6 @@ export default function Login() {
             </button>
           </div>
         </div>
-      </div>
-    </div>
-  );
-}
 
         {/* Security Trust Badges */}
         <div className="mt-8 flex justify-center items-center gap-6 opacity-40 grayscale hover:grayscale-0 transition-all duration-500">
