@@ -14,8 +14,10 @@ export function BankAccountModal({ isOpen, onClose }: BankAccountModalProps) {
   const [bankData, setBankData] = useState({
     ifsc: "",
     accountNumber: "",
-    reAccountNumber: ""
+    reAccountNumber: "",
+    upiId: ""
   });
+  const [withdrawMethod, setWithdrawMethod] = useState<'bank' | 'upi'>('bank');
   const [isSaved, setIsSaved] = useState(false);
   const [withdrawAmount, setWithdrawAmount] = useState("");
   const [userBalance, setUserBalance] = useState(0);
@@ -45,7 +47,7 @@ export function BankAccountModal({ isOpen, onClose }: BankAccountModalProps) {
   }, [isOpen]);
 
   const handleSaveBank = async () => {
-    if (!bankData.ifsc || !bankData.accountNumber || !bankData.reAccountNumber) {
+    if (!bankData.ifsc || !bankData.accountNumber || !bankData.reAccountNumber || !bankData.upiId) {
       return toast({ variant: "destructive", title: "Error", description: "Please fill all fields" });
     }
     if (bankData.accountNumber !== bankData.reAccountNumber) {
@@ -62,6 +64,7 @@ export function BankAccountModal({ isOpen, onClose }: BankAccountModalProps) {
           bankDetails: {
             ifsc: bankData.ifsc,
             accountNumber: bankData.accountNumber,
+            upiId: bankData.upiId,
             updatedAt: (window as any).firebase.firestore.FieldValue.serverTimestamp()
           }
         });
@@ -96,7 +99,8 @@ export function BankAccountModal({ isOpen, onClose }: BankAccountModalProps) {
           uid: currentUser.uid,
           amount: amount,
           status: "pending",
-          bankDetails: bankData.accountNumber,
+          method: withdrawMethod,
+          details: withdrawMethod === 'bank' ? bankData.accountNumber : bankData.upiId,
           timestamp: (window as any).firebase.firestore.FieldValue.serverTimestamp()
         });
 
@@ -171,8 +175,18 @@ export function BankAccountModal({ isOpen, onClose }: BankAccountModalProps) {
                     className="w-full bg-white/5 border border-white/10 rounded-2xl py-3 pl-12 pr-4 text-sm focus:outline-none focus:border-amber-500/50 transition-colors"
                   />
                 </div>
-              )}
-            </div>
+                <div className="relative">
+                  <ShieldCheck className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
+                  <input 
+                    type="text" 
+                    placeholder="UPI ID (e.g. user@okaxis)"
+                    disabled={isSaved}
+                    value={bankData.upiId}
+                    onChange={(e) => setBankData({...bankData, upiId: e.target.value})}
+                    className="w-full bg-white/5 border border-white/10 rounded-2xl py-3 pl-12 pr-4 text-sm focus:outline-none focus:border-amber-500/50 transition-colors disabled:opacity-50"
+                  />
+                </div>
+              </div>
 
             {!isSaved ? (
               <button 
@@ -197,6 +211,21 @@ export function BankAccountModal({ isOpen, onClose }: BankAccountModalProps) {
                 </div>
 
                 <div className="space-y-4">
+                  <div className="flex gap-2 p-1 bg-white/5 rounded-2xl border border-white/5">
+                    <button 
+                      onClick={() => setWithdrawMethod('bank')}
+                      className={`flex-1 py-2 rounded-xl text-[10px] font-bold uppercase transition-all ${withdrawMethod === 'bank' ? 'bg-amber-500 text-slate-900 shadow-lg' : 'text-gray-400 hover:text-white'}`}
+                    >
+                      Bank Transfer
+                    </button>
+                    <button 
+                      onClick={() => setWithdrawMethod('upi')}
+                      className={`flex-1 py-2 rounded-xl text-[10px] font-bold uppercase transition-all ${withdrawMethod === 'upi' ? 'bg-amber-500 text-slate-900 shadow-lg' : 'text-gray-400 hover:text-white'}`}
+                    >
+                      UPI Transfer
+                    </button>
+                  </div>
+
                   <div className="relative">
                     <DollarSign className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
                     <input 
