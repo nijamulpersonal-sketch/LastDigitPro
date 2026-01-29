@@ -27,7 +27,13 @@ export function ProfileModal({ isOpen, onClose, onUpdate }: ProfileModalProps) {
     if (savedUser) {
       const parsedUser = JSON.parse(savedUser);
       setUser(parsedUser);
-      setFormData(parsedUser);
+      // Auto-fill form data with email and other fields from auth, but keep age and photo manual
+      setFormData(prev => ({
+        ...prev,
+        ...parsedUser,
+        age: parsedUser.age || prev.age,
+        photo: parsedUser.photo || prev.photo
+      }));
     }
   }, [isOpen]);
 

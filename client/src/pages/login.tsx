@@ -34,7 +34,21 @@ export default function Login() {
       }
 
       const user = userCredential.user;
-      localStorage.setItem('user_profile', JSON.stringify({ uid: user.uid, email: user.email }));
+      
+      // Get existing profile or create one
+      const savedProfile = localStorage.getItem('user_profile');
+      const existingProfile = savedProfile ? JSON.parse(savedProfile) : {};
+      
+      const updatedProfile = {
+        ...existingProfile,
+        uid: user.uid,
+        email: user.email,
+        // Preserve age and photo if they already exist, otherwise leave them for manual entry
+        age: existingProfile.age || "",
+        photo: existingProfile.photo || null
+      };
+      
+      localStorage.setItem('user_profile', JSON.stringify(updatedProfile));
       setLocation("/");
     } catch (error: any) {
       alert(error.message);
