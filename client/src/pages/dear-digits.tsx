@@ -39,9 +39,9 @@ const generateMockData = () => {
     let dayValue = values[i]?.day || "-";
     let evnValue = values[i]?.evn || "-";
     
-    // For the first entry (Today), add 5 to the date and show it in Morning section
+    // For the first entry (Today), show exactly "5" as requested
     if (i === 0) {
-      morValue = (date.getDate() + 5).toString();
+      morValue = "5";
       dayValue = "-";
       evnValue = "-";
     }
