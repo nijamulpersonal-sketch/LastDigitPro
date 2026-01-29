@@ -194,12 +194,6 @@ export function BankAccountModal({ isOpen, onClose }: BankAccountModalProps) {
                       <p className="text-lg font-black text-white">₹{userBalance}</p>
                     </div>
                   </div>
-                  <button 
-                    onClick={() => setIsSaved(false)}
-                    className="text-[9px] font-bold text-amber-500 uppercase hover:underline"
-                  >
-                    Edit Bank
-                  </button>
                 </div>
 
                 <div className="space-y-4">
