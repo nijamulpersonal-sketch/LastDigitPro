@@ -27,15 +27,12 @@ export function BankAccountModal({ isOpen, onClose }: BankAccountModalProps) {
       const savedUser = localStorage.getItem('user_profile');
       if (savedUser) {
         const parsedUser = JSON.parse(savedUser);
-        // Load existing bank details from localStorage or Firestore if needed
-        // For now, let's check if we have them saved locally
         const existingBank = localStorage.getItem(`bank_${parsedUser.uid}`);
         if (existingBank) {
           setBankData(JSON.parse(existingBank));
           setIsSaved(true);
         }
         
-        // Fetch balance from Firestore
         const db = (window as any).firebase.firestore();
         db.collection("users").doc(parsedUser.uid).get().then((doc: any) => {
           if (doc.exists) {
@@ -94,7 +91,6 @@ export function BankAccountModal({ isOpen, onClose }: BankAccountModalProps) {
       const currentUser = (window as any).firebase.auth().currentUser;
       
       if (currentUser) {
-        // Log withdrawal request
         await db.collection("withdrawals").add({
           uid: currentUser.uid,
           amount: amount,
@@ -104,7 +100,6 @@ export function BankAccountModal({ isOpen, onClose }: BankAccountModalProps) {
           timestamp: (window as any).firebase.firestore.FieldValue.serverTimestamp()
         });
 
-        // Update balance (mockup mode logic - usually done on server)
         const newBalance = userBalance - amount;
         await db.collection("users").doc(currentUser.uid).update({
           balance: newBalance
@@ -164,29 +159,42 @@ export function BankAccountModal({ isOpen, onClose }: BankAccountModalProps) {
                 />
               </div>
 
-              {!isSaved && (
+              {!isSaved ? (
+                <>
+                  <div className="relative">
+                    <ShieldCheck className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
+                    <input 
+                      type="text" 
+                      placeholder="Re-enter Account Number"
+                      value={bankData.reAccountNumber}
+                      onChange={(e) => setBankData({...bankData, reAccountNumber: e.target.value})}
+                      className="w-full bg-white/5 border border-white/10 rounded-2xl py-3 pl-12 pr-4 text-sm focus:outline-none focus:border-amber-500/50 transition-colors"
+                    />
+                  </div>
+                  <div className="relative">
+                    <ShieldCheck className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
+                    <input 
+                      type="text" 
+                      placeholder="UPI ID (e.g. user@okaxis)"
+                      value={bankData.upiId}
+                      onChange={(e) => setBankData({...bankData, upiId: e.target.value})}
+                      className="w-full bg-white/5 border border-white/10 rounded-2xl py-3 pl-12 pr-4 text-sm focus:outline-none focus:border-amber-500/50 transition-colors"
+                    />
+                  </div>
+                </>
+              ) : (
                 <div className="relative">
                   <ShieldCheck className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
                   <input 
                     type="text" 
-                    placeholder="Re-enter Account Number"
-                    value={bankData.reAccountNumber}
-                    onChange={(e) => setBankData({...bankData, reAccountNumber: e.target.value})}
-                    className="w-full bg-white/5 border border-white/10 rounded-2xl py-3 pl-12 pr-4 text-sm focus:outline-none focus:border-amber-500/50 transition-colors"
-                  />
-                </div>
-                <div className="relative">
-                  <ShieldCheck className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
-                  <input 
-                    type="text" 
-                    placeholder="UPI ID (e.g. user@okaxis)"
-                    disabled={isSaved}
+                    placeholder="UPI ID"
+                    disabled
                     value={bankData.upiId}
-                    onChange={(e) => setBankData({...bankData, upiId: e.target.value})}
-                    className="w-full bg-white/5 border border-white/10 rounded-2xl py-3 pl-12 pr-4 text-sm focus:outline-none focus:border-amber-500/50 transition-colors disabled:opacity-50"
+                    className="w-full bg-white/5 border border-white/10 rounded-2xl py-3 pl-12 pr-4 text-sm opacity-50 cursor-not-allowed"
                   />
                 </div>
-              </div>
+              )}
+            </div>
 
             {!isSaved ? (
               <button 
@@ -242,8 +250,7 @@ export function BankAccountModal({ isOpen, onClose }: BankAccountModalProps) {
                     disabled={loading || !withdrawAmount}
                     className="w-full py-4 rounded-2xl bg-gradient-to-r from-emerald-500 to-emerald-600 text-white font-black uppercase tracking-widest text-xs shadow-lg shadow-emerald-500/20 active:scale-95 transition-all disabled:opacity-50"
                   >
-                    <ArrowRightLeft className="w-4 h-4 inline-block mr-2" />
-                    {loading ? "Processing..." : "Withdraw Now"}
+                    Withdraw Now
                   </button>
                 </div>
               </div>
