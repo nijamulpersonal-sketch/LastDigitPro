@@ -5,14 +5,14 @@ import { Link } from "wouter";
 // Generate mock data for the last 20 days
 const generateMockData = () => {
   const data = [];
-  const baseDate = new Date(); // Using today's date for accurate calculation
+  const baseDate = new Date(); // Use actual current date
   
   const values = [
-    { mor: "5", day: "-", evn: "-" }, // Today (as per screenshot logic)
-    { mor: "5", day: "2", evn: "6" },
-    { mor: "7", day: "0", evn: "0" },
-    { mor: "-", day: "-", evn: "-" },
-    { mor: "8", day: "3", evn: "2" },
+    { mor: "-", day: "-", evn: "-" }, // Placeholder for today, will be calculated
+    { mor: "5", day: "2", evn: "6" }, // 28-01-26
+    { mor: "7", day: "0", evn: "0" }, // 27-01-26
+    { mor: "-", day: "-", evn: "-" }, // 26-01-26
+    { mor: "8", day: "3", evn: "2" }, // 25-01-26
     { mor: "1", day: "1", evn: "5" },
     { mor: "4", day: "6", evn: "0" },
     { mor: "7", day: "8", evn: "0" },
@@ -36,17 +36,21 @@ const generateMockData = () => {
     const dateStr = `${date.getDate().toString().padStart(2, '0')}-${(date.getMonth() + 1).toString().padStart(2, '0')}-${date.getFullYear().toString().slice(-2)}`;
     
     let morValue = values[i]?.mor || "-";
+    let dayValue = values[i]?.day || "-";
+    let evnValue = values[i]?.evn || "-";
     
     // For the first entry (Today), add 5 to the date and show it in Morning section
     if (i === 0) {
       morValue = (date.getDate() + 5).toString();
+      dayValue = "-";
+      evnValue = "-";
     }
 
     data.push({
       date: dateStr,
       mor: morValue,
-      day: values[i]?.day || "-",
-      evn: values[i]?.evn || "-"
+      day: dayValue,
+      evn: evnValue
     });
   }
   return data;
