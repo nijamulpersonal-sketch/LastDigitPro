@@ -228,6 +228,29 @@ export default function Home() {
             </div>
             <p className="text-xs text-gray-400">20-day chart analysis</p>
           </div>
+
+          <div 
+            onClick={() => window.open('https://lotterysambad.one/', '_blank')}
+            className="glass card-hover rounded-2xl p-4 cursor-pointer"
+          >
+            <div className="flex items-center gap-3 mb-2">
+              <div className="bg-gradient-to-br from-pink-500 to-rose-600 p-2 rounded-lg shadow-lg shadow-rose-500/20">
+                <FileText className="w-5 h-5 text-white" />
+              </div>
+              <h3 className="font-semibold text-white">Lottery Fax</h3>
+            </div>
+            <p className="text-xs text-gray-400">Official results archive</p>
+          </div>
+
+          <div onClick={handleSettingsOpen} className="glass card-hover rounded-2xl p-4 cursor-pointer">
+            <div className="flex items-center gap-3 mb-2">
+              <div className="bg-gradient-to-br from-gray-500 to-gray-700 p-2 rounded-lg">
+                <Settings className="w-5 h-5 text-white" />
+              </div>
+              <h3 className="font-semibold text-white">Settings</h3>
+            </div>
+            <p className="text-xs text-gray-400">App preferences</p>
+          </div>
         </div>
 
         {/* Refund Guarantee */}
