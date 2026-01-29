@@ -16,6 +16,28 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+
+    <script>
+      const firebaseConfig = {
+        apiKey: "AIzaSyC9jB9AL9QVGF9Dg4t9SVOl9GsnXZPBsxo",
+        authDomain: "last-digit-pro.firebaseapp.com",
+        projectId: "last-digit-pro",
+        storageBucket: "last-digit-pro.firebasestorage.app",
+        messagingSenderId: "843809760352",
+        appId: "1:843809760352:web:5e688aa75ed62087dacf05",
+        measurementId: "G-X9DJL25EDR"
+      };
+      
+      // Initialize Firebase using compat mode for script tag usage
+      if (!firebase.apps.length) {
+        firebase.initializeApp(firebaseConfig);
+      }
+    </script>
   </head>
   <body>
     <div id="root"></div>

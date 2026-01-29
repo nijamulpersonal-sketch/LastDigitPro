@@ -35,6 +35,10 @@ export default function Home() {
 
   useEffect(() => {
     const savedUser = localStorage.getItem('user_profile');
+    if (!savedUser && location !== "/login") {
+      setLocation("/login");
+      return;
+    }
     if (savedUser) {
       setUser(JSON.parse(savedUser));
     }
