@@ -8,7 +8,7 @@ const generateMockData = () => {
   const baseDate = new Date(); // Use actual current date
   
   const values = [
-    { mor: "-", day: "-", evn: "-" }, // Placeholder for today, will be calculated
+    { mor: "5", day: "1", evn: "5" }, // Today (29-01-26 in screenshot)
     { mor: "5", day: "2", evn: "6" }, // 28-01-26
     { mor: "7", day: "0", evn: "0" }, // 27-01-26
     { mor: "-", day: "-", evn: "-" }, // 26-01-26
@@ -39,13 +39,7 @@ const generateMockData = () => {
     let dayValue = values[i]?.day || "-";
     let evnValue = values[i]?.evn || "-";
     
-    // For the first entry (Today), show exactly "5" as requested
-    if (i === 0) {
-      morValue = "5";
-      dayValue = "-";
-      evnValue = "-";
-    }
-
+    // Note: User wants exactly as per screenshot now
     data.push({
       date: dateStr,
       mor: morValue,
