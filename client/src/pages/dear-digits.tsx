@@ -5,7 +5,7 @@ import { Link } from "wouter";
 // Generate mock data for the last 20 days
 const generateMockData = () => {
   const data = [];
-  const baseDate = new Date(2026, 0, 28);
+  const baseDate = new Date(); // Using today's date for accurate "Morning + 5" logic
   
   const values = [
     { mor: "5", day: "2", evn: "6" },
@@ -34,9 +34,19 @@ const generateMockData = () => {
     const date = new Date(baseDate);
     date.setDate(baseDate.getDate() - i);
     const dateStr = `${date.getDate().toString().padStart(2, '0')}-${(date.getMonth() + 1).toString().padStart(2, '0')}-${date.getFullYear().toString().slice(-2)}`;
+    
+    let morValue = values[i]?.mor || "-";
+    
+    // For the first entry (Today), add 5 to the date and show it in Morning section
+    if (i === 0) {
+      morValue = (date.getDate() + 5).toString();
+    }
+
     data.push({
       date: dateStr,
-      ...values[i] || { mor: "-", day: "-", evn: "-" }
+      mor: morValue,
+      day: values[i]?.day || "-",
+      evn: values[i]?.evn || "-"
     });
   }
   return data;
