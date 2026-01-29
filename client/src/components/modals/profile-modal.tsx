@@ -153,7 +153,7 @@ export function ProfileModal({ isOpen, onClose, onUpdate }: ProfileModalProps) {
             </div>
             
             <h2 className="text-2xl font-black text-white tracking-tight">
-              {user ? "Your Profile" : (isLogin ? "Welcome Back" : "Create Account")}
+              {user?.name || (isLogin ? "Welcome Back" : "Create Account")}
             </h2>
             {user && (
               <div className="flex items-center justify-center gap-2 mt-2">
@@ -214,28 +214,6 @@ export function ProfileModal({ isOpen, onClose, onUpdate }: ProfileModalProps) {
 
             {user ? (
               <div className="space-y-4 pt-4">
-                <div className="relative opacity-60">
-                  <User className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
-                  <input 
-                    type="text" 
-                    placeholder="Full Name"
-                    disabled
-                    value={formData.name}
-                    className="w-full bg-white/5 border border-white/10 rounded-2xl py-3 pl-12 pr-4 text-sm cursor-not-allowed"
-                  />
-                </div>
-
-                <div className="relative opacity-60">
-                  <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
-                  <input 
-                    type="email" 
-                    placeholder="Email Address"
-                    disabled
-                    value={formData.email}
-                    className="w-full bg-white/5 border border-white/10 rounded-2xl py-3 pl-12 pr-4 text-sm cursor-not-allowed"
-                  />
-                </div>
-
                 <div className="grid grid-cols-2 gap-4">
                   <div className="bg-white/5 rounded-2xl p-4 text-center">
                     <span className="text-[10px] text-gray-500 uppercase font-bold block mb-1">Age</span>
