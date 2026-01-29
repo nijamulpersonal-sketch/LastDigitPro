@@ -11,6 +11,10 @@ export default function Login() {
   const [isRegistering, setIsRegistering] = useState(false);
   const [loading, setLoading] = useState(false);
 
+  const generateIdentityNumber = () => {
+    return "LDP-" + Math.random().toString(36).substr(2, 9).toUpperCase();
+  };
+
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email || !password || (isRegistering && !name)) {
@@ -25,14 +29,20 @@ export default function Login() {
       const auth = (window as any).firebase.auth();
       
       let userCredential;
+      const identityId = generateIdentityNumber();
+
       if (isRegistering) {
         userCredential = await auth.createUserWithEmailAndPassword(email, password);
         await db.collection("users").doc(userCredential.user.uid).set({
+          uid: userCredential.user.uid,
           name,
           email,
+          id: identityId,
           balance: 0,
           createdAt: (window as any).firebase.firestore.FieldValue.serverTimestamp(),
-          phone: ""
+          phone: "",
+          age: "",
+          photo: ""
         });
         setStatus("Registration successful!");
       } else {
@@ -41,16 +51,18 @@ export default function Login() {
       }
 
       const user = userCredential.user;
-      const savedProfile = localStorage.getItem('user_profile');
-      const existingProfile = savedProfile ? JSON.parse(savedProfile) : {};
       
+      // Fetch user data from Firestore to get the unique ID
+      const userDoc = await db.collection("users").doc(user.uid).get();
+      const userData = userDoc.data();
+
       const updatedProfile = {
-        ...existingProfile,
         uid: user.uid,
         email: user.email,
-        name: name || existingProfile.name || "",
-        age: existingProfile.age || "",
-        photo: existingProfile.photo || null
+        name: userData?.name || name,
+        id: userData?.id || identityId,
+        age: userData?.age || "",
+        photo: userData?.photo || null
       };
       
       localStorage.setItem('user_profile', JSON.stringify(updatedProfile));

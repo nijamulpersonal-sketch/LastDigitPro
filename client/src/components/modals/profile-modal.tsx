@@ -22,12 +22,13 @@ export function ProfileModal({ isOpen, onClose, onUpdate }: ProfileModalProps) {
   
   const [user, setUser] = useState<any>(null);
 
+  const [loading, setLoading] = useState(false);
+
   useEffect(() => {
     const savedUser = localStorage.getItem('user_profile');
     if (savedUser) {
       const parsedUser = JSON.parse(savedUser);
       setUser(parsedUser);
-      // Auto-fill form data with email and other fields from auth, but keep age and photo manual
       setFormData(prev => ({
         ...prev,
         ...parsedUser,
@@ -41,30 +42,54 @@ export function ProfileModal({ isOpen, onClose, onUpdate }: ProfileModalProps) {
     return "LDP-" + Math.random().toString(36).substr(2, 9).toUpperCase();
   };
 
-  const handleSave = () => {
-    if (!formData.email || !formData.password) {
+  const handleSave = async () => {
+    if (!formData.email) {
       toast({
         variant: "destructive",
         title: "Missing Fields",
-        description: "Email and password are required.",
+        description: "Email is required.",
       });
       return;
     }
 
-    const userData = {
-      ...formData,
-      id: user?.id || generateIdentityNumber(),
-      lastLogin: new Date().toISOString()
-    };
+    setLoading(true);
+    try {
+      const db = (window as any).firebase.firestore();
+      const currentUser = (window as any).firebase.auth().currentUser;
+      
+      if (currentUser) {
+        const userData = {
+          name: formData.name,
+          age: formData.age,
+          photo: formData.photo,
+          lastUpdate: (window as any).firebase.firestore.FieldValue.serverTimestamp()
+        };
 
-    localStorage.setItem('user_profile', JSON.stringify(userData));
-    setUser(userData);
-    onUpdate(userData);
-    
-    toast({
-      title: "Profile Saved",
-      description: "Your information has been updated successfully.",
-    });
+        await db.collection("users").doc(currentUser.uid).update(userData);
+        
+        const fullProfile = {
+          ...user,
+          ...formData,
+          lastUpdate: new Date().toISOString()
+        };
+
+        localStorage.setItem('user_profile', JSON.stringify(fullProfile));
+        setUser(fullProfile);
+        onUpdate(fullProfile);
+        
+        toast({
+          title: "Profile Saved",
+          description: "Your information has been updated successfully in Firebase.",
+        });
+      }
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Error Saving",
+        description: error.message,
+      });
+    }
+    setLoading(false);
   };
 
   const handleLogin = () => {
