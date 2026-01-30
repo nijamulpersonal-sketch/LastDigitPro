@@ -20,6 +20,9 @@ import {
   DollarSign
 } from "lucide-react";
 import { useLocation } from "wouter";
+import { getAuth, onAuthStateChanged } from "firebase/auth";
+import { getFirestore, doc, onSnapshot } from "firebase/firestore";
+import { app } from "@/lib/firebase";
 import { PrivacyPolicyModal } from "@/components/modals/privacy-policy-modal";
 import { SubscriptionModal } from "@/components/modals/subscription-modal";
 import { SettingsModal } from "@/components/modals/settings-modal";
@@ -39,18 +42,61 @@ export default function Home() {
   const [showDeposit, setShowDeposit] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<'first-time' | 'regular' | null>(null);
   const [user, setUser] = useState<any>(null);
+  const [userBalance, setUserBalance] = useState<number>(0);
   const [activeUsers, setActiveUsers] = useState(124);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const savedUser = localStorage.getItem('user_profile');
-    if (!savedUser && location !== "/login") {
-      setLocation("/login");
-      return;
-    }
-    if (savedUser) {
-      setUser(JSON.parse(savedUser));
-    }
+    const auth = getAuth();
+    const db = getFirestore(app);
 
+    const unsubAuth = onAuthStateChanged(auth, (firebaseUser) => {
+      if (!firebaseUser) {
+        // No user logged in, redirect to login
+        if (location !== "/login") {
+          setLocation("/login");
+        }
+        setUserBalance(0);
+        setUser(null);
+        setIsLoading(false);
+        return;
+      }
+
+      // User is logged in, listen to their Firestore document
+      const unsubDoc = onSnapshot(doc(db, "users", firebaseUser.uid), (snap) => {
+        if (snap.exists()) {
+          const data = snap.data();
+          
+          // Set Firestore balance
+          setUserBalance(data.balance || 0);
+          
+          // Set user profile data from Firestore
+          setUser({
+            uid: firebaseUser.uid,
+            email: firebaseUser.email,
+            photo: data.photo || null,
+            name: data.name || firebaseUser.displayName,
+            phone: data.phone || null,
+            // Add other fields from Firestore as needed
+            ...data
+          });
+        } else {
+          // Document doesn't exist, create default
+          setUserBalance(0);
+          setUser({
+            uid: firebaseUser.uid,
+            email: firebaseUser.email,
+            photo: null,
+            name: firebaseUser.displayName,
+          });
+        }
+        setIsLoading(false);
+      });
+
+      return () => unsubDoc();
+    });
+
+    // Update active users counter
     const updateActiveUsers = () => {  
       const now = new Date();  
       const hour = now.getHours();  
@@ -81,8 +127,11 @@ export default function Home() {
 
     updateActiveUsers();  
     const interval = setInterval(updateActiveUsers, 5000); // Update every 5 seconds  
-    return () => clearInterval(interval);
 
+    return () => {
+      unsubAuth();
+      clearInterval(interval);
+    };
   }, []);
 
   const handlePlanSelect = (plan: 'first-time' | 'regular') => {
@@ -100,16 +149,35 @@ export default function Home() {
   const handlePrivacyClose = () => setShowPrivacy(false);
 
   const handleProfileUpdate = (updatedUser: any) => {
-    setUser(updatedUser);
+    // Remove balance from updatedUser if present
+    const { balance, ...userWithoutBalance } = updatedUser;
+    setUser(userWithoutBalance);
+    // Optionally: Save to Firestore here or let ProfileModal handle it
   };
 
   const handleDepositSuccess = (newBalance: number) => {
+    // Update local state immediately for better UX
+    setUserBalance(newBalance);
+    
     if (user) {
-      const updatedUser = { ...user, balance: newBalance };
-      localStorage.setItem('user_profile', JSON.stringify(updatedUser));
+      // Update user object without balance (balance is separate)
+      const updatedUser = { ...user };
+      // Don't store balance in user object, it's in separate state
       setUser(updatedUser);
     }
   };
+
+  // Show loading state
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-slate-900 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-amber-500 mx-auto"></div>
+          <p className="mt-4 text-gray-400">Loading...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen pb-24 bg-slate-900 selection:bg-amber-500/30">
@@ -165,7 +233,7 @@ export default function Home() {
               </div>  
               <div>  
                 <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Available Balance</p>  
-                <p className="text-lg font-black text-white leading-none">₹{user?.balance || "0"}</p>  
+                <p className="text-lg font-black text-white leading-none">₹{userBalance}</p>  
               </div>  
             </div>  
             <button   
@@ -344,13 +412,13 @@ export default function Home() {
       <SettingsModal isOpen={showSettings} onClose={handleSettingsClose} onOpenPrivacy={handlePrivacyOpen} />  
       <PrivacyPolicyModal isOpen={showPrivacy} onClose={handlePrivacyClose} />  
       <SubscriptionModal isOpen={showSubscription} onClose={() => setShowSubscription(false)} planType={selectedPlan} />  
-      <ProfileModal isOpen={showProfile} onClose={() => setShowProfile(false)} onUpdate={handleProfileUpdate} />  
+      <ProfileModal isOpen={showProfile} onClose={() => setShowProfile(false)} onUpdate={handleProfileUpdate} user={user} />  
       <ChatBotModal isOpen={showChatBot} onClose={() => setShowChatBot(false)} />  
       <BankAccountModal isOpen={showBank} onClose={() => setShowBank(false)} />  
       <DepositModal 
         isOpen={showDeposit} 
         onClose={() => setShowDeposit(false)} 
-        userBalance={user?.balance || 0}
+        userBalance={userBalance}
         onDepositSuccess={handleDepositSuccess}
       />
     </div>
