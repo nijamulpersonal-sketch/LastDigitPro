@@ -8,7 +8,8 @@ const generateMockData = () => {
   const baseDate = new Date(); // Use actual current date
   
   const values = [
-    { mor: "5", day: "1", evn: "5" }, // Today (29-01-26 in screenshot)
+    { mor: "4", day: "-", evn: "-" }, // Today (30-01-26 in screenshot)
+    { mor: "5", day: "1", evn: "5" }, // 29-01-26
     { mor: "5", day: "2", evn: "6" }, // 28-01-26
     { mor: "7", day: "0", evn: "0" }, // 27-01-26
     { mor: "-", day: "-", evn: "-" }, // 26-01-26
@@ -27,7 +28,6 @@ const generateMockData = () => {
     { mor: "3", day: "7", evn: "2" },
     { mor: "4", day: "7", evn: "0" },
     { mor: "7", day: "1", evn: "2" },
-    { mor: "8", day: "2", evn: "7" },
   ];
 
   for (let i = 0; i < 20; i++) {
@@ -35,16 +35,11 @@ const generateMockData = () => {
     date.setDate(baseDate.getDate() - i);
     const dateStr = `${date.getDate().toString().padStart(2, '0')}-${(date.getMonth() + 1).toString().padStart(2, '0')}-${date.getFullYear().toString().slice(-2)}`;
     
-    let morValue = values[i]?.mor || "-";
-    let dayValue = values[i]?.day || "-";
-    let evnValue = values[i]?.evn || "-";
-    
-    // Note: User wants exactly as per screenshot now
     data.push({
       date: dateStr,
-      mor: morValue,
-      day: dayValue,
-      evn: evnValue
+      mor: values[i]?.mor || "-",
+      day: values[i]?.day || "-",
+      evn: values[i]?.evn || "-"
     });
   }
   return data;

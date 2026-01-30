@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { User, Camera, X, ShieldCheck, Fingerprint } from "lucide-react";
+import { User, Mail, Lock, Camera, X, ShieldCheck, Fingerprint, Calendar, Clock } from "lucide-react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 
@@ -11,90 +11,84 @@ interface ProfileModalProps {
 
 export function ProfileModal({ isOpen, onClose, onUpdate }: ProfileModalProps) {
   const { toast } = useToast();
-
-  const [lastLogin, setLastLogin] = useState("");
+  const [isLogin, setIsLogin] = useState(true);
   const [formData, setFormData] = useState({
     name: "",
+    email: "",
+    password: "",
     age: "",
     photo: ""
   });
-
+  
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(false);
+  const [lastLogin, setLastLogin] = useState<string>("");
 
   useEffect(() => {
-    const loadProfile = async () => {
-      const savedUser = localStorage.getItem("user_profile");
-      if (savedUser) {
-        const parsedUser = JSON.parse(savedUser);
-        setUser(parsedUser);
-        setFormData(prev => ({
-          ...prev,
-          ...parsedUser,
-          photo: parsedUser.photo || prev.photo
-        }));
+    const savedUser = localStorage.getItem('user_profile');
+    if (savedUser) {
+      const parsedUser = JSON.parse(savedUser);
+      setUser(parsedUser);
+      setFormData(prev => ({
+        ...prev,
+        ...parsedUser
+      }));
+
+      // Fetch last login from firebase auth metadata
+      const currentUser = (window as any).firebase.auth().currentUser;
+      if (currentUser && currentUser.metadata.lastSignInTime) {
+        const lastSignIn = new Date(currentUser.metadata.lastSignInTime);
+        const formattedDate = lastSignIn.toLocaleString('en-IN', {
+          day: '2-digit',
+          month: 'short',
+          year: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit',
+          hour12: true
+        });
+        setLastLogin(formattedDate);
+      } else {
+        // Fallback to current time for mockup
+        const now = new Date();
+        const formattedDate = now.toLocaleString('en-IN', {
+          day: '2-digit',
+          month: 'short',
+          year: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit',
+          hour12: true
+        });
+        setLastLogin(formattedDate);
       }
-
-      const firebaseAuth = (window as any).firebase.auth();
-      const db = (window as any).firebase.firestore();
-      const currentUser = firebaseAuth.currentUser;
-
-      if (currentUser) {
-        const userRef = db.collection("users").doc(currentUser.uid);
-        const snap = await userRef.get();
-        const data = snap.data();
-
-        if (data?.firstLoginAt) {
-          const date = data.firstLoginAt.toDate();
-          setLastLogin(formatDate(date));
-        } else {
-          const now = new Date();
-          await userRef.update({ firstLoginAt: now });
-          setLastLogin(formatDate(now));
-        }
-      }
-    };
-
-    loadProfile();
+    }
   }, [isOpen]);
-
-  const formatDate = (date: Date) => {
-    return date.toLocaleString("en-GB", {
-      day: "2-digit",
-      month: "short",
-      year: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-      hour12: true,
-    });
-  };
 
   const handleSave = async () => {
     setLoading(true);
     try {
       const db = (window as any).firebase.firestore();
       const currentUser = (window as any).firebase.auth().currentUser;
-
+      
       if (currentUser) {
         const userData = {
           name: formData.name,
-          age: formData.age,
           photo: formData.photo,
           lastUpdate: (window as any).firebase.firestore.FieldValue.serverTimestamp()
         };
 
         await db.collection("users").doc(currentUser.uid).update(userData);
-
+        
         const fullProfile = {
           ...user,
-          ...formData,
+          name: formData.name,
+          photo: formData.photo,
           lastUpdate: new Date().toISOString()
         };
 
-        localStorage.setItem("user_profile", JSON.stringify(fullProfile));
+        localStorage.setItem('user_profile', JSON.stringify(fullProfile));
         setUser(fullProfile);
         onUpdate(fullProfile);
-
+        
         toast({
           title: "Profile Saved",
           description: "Your information has been updated successfully.",
@@ -110,6 +104,28 @@ export function ProfileModal({ isOpen, onClose, onUpdate }: ProfileModalProps) {
     setLoading(false);
   };
 
+  const handleLogin = () => {
+    const savedUser = localStorage.getItem('user_profile');
+    if (savedUser) {
+      const parsedUser = JSON.parse(savedUser);
+      if (parsedUser.email === formData.email && parsedUser.password === formData.password) {
+        setUser(parsedUser);
+        setFormData(parsedUser);
+        onUpdate(parsedUser);
+        toast({
+          title: "Welcome Back!",
+          description: `Logged in as ${parsedUser.name || parsedUser.email}`,
+        });
+        return;
+      }
+    }
+    toast({
+      variant: "destructive",
+      title: "Login Failed",
+      description: "Invalid email or password.",
+    });
+  };
+
   const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -119,12 +135,6 @@ export function ProfileModal({ isOpen, onClose, onUpdate }: ProfileModalProps) {
       };
       reader.readAsDataURL(file);
     }
-  };
-
-  const handleLogout = () => {
-    localStorage.removeItem("user_profile");
-    setUser(null);
-    onUpdate(null);
   };
 
   return (
@@ -148,69 +158,123 @@ export function ProfileModal({ isOpen, onClose, onUpdate }: ProfileModalProps) {
                   )}
                 </div>
               </div>
-              {user && (
-                <label className="absolute bottom-2 right-0 w-8 h-8 bg-white text-slate-900 rounded-xl flex items-center justify-center cursor-pointer shadow-lg hover:scale-110 transition-transform">
-                  <Camera className="w-4 h-4" />
-                  <input type="file" className="hidden" accept="image/*" onChange={handlePhotoUpload} />
-                </label>
-              )}
+              <label className="absolute bottom-2 right-0 w-8 h-8 bg-white text-slate-900 rounded-xl flex items-center justify-center cursor-pointer shadow-lg hover:scale-110 transition-transform">
+                <Camera className="w-4 h-4" />
+                <input type="file" className="hidden" accept="image/*" onChange={handlePhotoUpload} />
+              </label>
             </div>
-
+            
             <h2 className="text-2xl font-black text-white tracking-tight">
-              {user?.name || "Guest"}
+              {user?.name || (isLogin ? "Welcome Back" : "Create Account")}
             </h2>
-
             {user && (
               <div className="flex items-center justify-center gap-2 mt-2">
                 <Fingerprint className="w-3 h-3 text-amber-400" />
-                <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">
-                  {user?.id || "USER"}
-                </span>
+                <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">{user.id}</span>
               </div>
             )}
           </div>
 
-          {user ? (
-            <div className="space-y-4 pt-4">
-              <div className="bg-neutral-900 p-4 rounded-2xl text-center">
-                <p className="text-[10px] text-gray-500 uppercase font-bold mb-1">First Login</p>
-                <p className="text-sm font-semibold text-white">{lastLogin || "N/A"}</p>
+          <div className="space-y-4">
+            {!user && (
+              <>
+                {!isLogin && (
+                  <div className="relative">
+                    <User className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
+                    <input 
+                      type="text" 
+                      placeholder="Full Name"
+                      value={formData.name}
+                      onChange={(e) => setFormData({...formData, name: e.target.value})}
+                      className="w-full bg-white/5 border border-white/10 rounded-2xl py-3 pl-12 pr-4 text-sm focus:outline-none focus:border-amber-500/50 transition-colors"
+                    />
+                  </div>
+                )}
+                <div className="relative">
+                  <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
+                  <input 
+                    type="email" 
+                    placeholder="Email Address"
+                    value={formData.email}
+                    onChange={(e) => setFormData({...formData, email: e.target.value})}
+                    className="w-full bg-white/5 border border-white/10 rounded-2xl py-3 pl-12 pr-4 text-sm focus:outline-none focus:border-amber-500/50 transition-colors"
+                  />
+                </div>
+                <div className="relative">
+                  <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
+                  <input 
+                    type="password" 
+                    placeholder="Password"
+                    value={formData.password}
+                    onChange={(e) => setFormData({...formData, password: e.target.value})}
+                    className="w-full bg-white/5 border border-white/10 rounded-2xl py-3 pl-12 pr-4 text-sm focus:outline-none focus:border-amber-500/50 transition-colors"
+                  />
+                </div>
+                {!isLogin && (
+                  <div className="relative">
+                    <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
+                    <input 
+                      type="number" 
+                      placeholder="Age"
+                      value={formData.age}
+                      onChange={(e) => setFormData({...formData, age: e.target.value})}
+                      className="w-full bg-white/5 border border-white/10 rounded-2xl py-3 pl-12 pr-4 text-sm focus:outline-none focus:border-amber-500/50 transition-colors"
+                    />
+                  </div>
+                )}
+              </>
+            )}
+
+            {user ? (
+              <div className="space-y-4 pt-4">
+                <div className="bg-white/5 rounded-2xl p-4 text-center border border-white/10 group hover:border-amber-500/30 transition-colors">
+                  <div className="flex items-center justify-center gap-2 mb-1">
+                    <Clock className="w-3 h-3 text-amber-400" />
+                    <span className="text-[10px] text-gray-500 uppercase font-bold tracking-widest">Last Login</span>
+                  </div>
+                  <span className="text-sm font-bold text-white tracking-tight">{lastLogin}</span>
+                </div>
+
+                <button 
+                  onClick={handleSave}
+                  disabled={loading}
+                  className="w-full py-4 rounded-2xl bg-gradient-to-r from-amber-400 to-amber-600 text-slate-900 font-black uppercase tracking-widest text-xs shadow-lg shadow-amber-500/20 active:scale-95 transition-all"
+                >
+                  {loading ? "Saving..." : "Save Changes"}
+                </button>
+                <button 
+                  onClick={() => {
+                    localStorage.removeItem('user_profile');
+                    setUser(null);
+                    setFormData({ name: "", email: "", password: "", age: "", photo: "" });
+                    onUpdate(null);
+                  }}
+                  className="w-full py-4 rounded-2xl bg-white/5 text-gray-400 font-bold text-xs border border-white/10 hover:bg-white/10 hover:text-white transition-all"
+                >
+                  Logout Account
+                </button>
               </div>
-
-              <button
-                onClick={handleSave}
-                disabled={loading}
-                className="w-full py-4 rounded-2xl bg-gradient-to-r from-amber-400 to-amber-600 text-slate-900 font-black uppercase tracking-widest text-xs shadow-lg shadow-amber-500/20"
-              >
-                Save Changes
-              </button>
-
-              <button
-                onClick={handleLogout}
-                className="w-full py-4 rounded-2xl bg-white/5 text-gray-400 font-bold text-xs border border-white/10"
-              >
-                Logout Account
-              </button>
-            </div>
-          ) : (
-            <div className="space-y-4 pt-4">
-              <button
-                onClick={onClose}
-                className="w-full py-4 rounded-2xl bg-gradient-to-r from-amber-400 to-amber-600 text-slate-900 font-black uppercase tracking-widest text-xs shadow-lg shadow-amber-500/20"
-              >
-                Login Account
-              </button>
-              <p className="text-center text-xs text-gray-500">
-                Please log in to access your profile
-              </p>
-            </div>
-          )}
+            ) : (
+              <div className="space-y-4 pt-4">
+                <button 
+                  onClick={isLogin ? handleLogin : handleSave}
+                  className="w-full py-4 rounded-2xl bg-gradient-to-r from-amber-400 to-amber-600 text-slate-900 font-black uppercase tracking-widest text-xs shadow-lg shadow-amber-500/20 active:scale-95 transition-all"
+                >
+                  {isLogin ? "Login Now" : "Register Now"}
+                </button>
+                <button 
+                  onClick={() => setIsLogin(!isLogin)}
+                  className="w-full text-xs text-gray-400 font-bold uppercase tracking-widest hover:text-white transition-colors"
+                >
+                  {isLogin ? "Don't have an account? Sign Up" : "Already have an account? Login"}
+                </button>
+              </div>
+            )}
+          </div>
 
           <div className="mt-8 flex items-center justify-center gap-2">
             <ShieldCheck className="w-3 h-3 text-emerald-500" />
-            <span className="text-[9px] text-gray-600 uppercase font-bold tracking-widest">
-              End-to-End Encrypted
-            </span>
+            <span className="text-[9px] text-gray-600 uppercase font-bold tracking-widest">End-to-End Encrypted</span>
           </div>
         </div>
       </DialogContent>
