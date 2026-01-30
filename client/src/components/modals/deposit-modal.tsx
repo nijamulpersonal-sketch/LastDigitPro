@@ -3,6 +3,10 @@ import { X, CreditCard, ChevronRight, CheckCircle2, Wallet } from "lucide-react"
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 
+import { getAuth } from "firebase/auth";
+import { getFirestore, doc, updateDoc, increment, serverTimestamp, addDoc, collection } from "firebase/firestore";
+import { app } from "@/lib/firebase";
+
 interface DepositModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -20,36 +24,42 @@ export function DepositModal({ isOpen, onClose, userBalance, onDepositSuccess }:
   const handleRecharge = async () => {
     setLoading(true);
     try {
-      const db = (window as any).firebase.firestore();
-      const currentUser = (window as any).firebase.auth().currentUser;
-      
-      if (currentUser) {
-        const newBalance = userBalance + selectedAmount;
-        
-        // Update database
-        await db.collection("users").doc(currentUser.uid).update({
-          balance: newBalance,
-          lastDeposit: selectedAmount,
-          deposit_at: (window as any).firebase.firestore.FieldValue.serverTimestamp()
-        });
+      const auth = getAuth();
+      const user = auth.currentUser;
+      const db = getFirestore(app);
 
-        // Log transaction
-        await db.collection("transactions").add({
-          uid: currentUser.uid,
-          amount: selectedAmount,
-          type: "deposit",
-          status: "success",
-          timestamp: (window as any).firebase.firestore.FieldValue.serverTimestamp()
-        });
-
-        onDepositSuccess(newBalance);
-        toast({
-          title: "Recharge Successful",
-          description: `₹${selectedAmount} has been added to your wallet.`,
-        });
-        onClose();
+      if (!user) {
+        throw new Error("User not logged in");
       }
+
+      const newBalance = userBalance + selectedAmount;
+
+      // 🔥 Update balance safely using increment
+      await updateDoc(doc(db, "users", user.uid), {
+        balance: increment(Number(selectedAmount)),
+        lastDeposit: selectedAmount,
+        deposit_at: serverTimestamp()
+      });
+
+      // 🧾 Save transaction history
+      await addDoc(collection(db, "transactions"), {
+        uid: user.uid,
+        amount: selectedAmount,
+        type: "deposit",
+        status: "success",
+        timestamp: serverTimestamp()
+      });
+
+      onDepositSuccess(newBalance);
+
+      toast({
+        title: "Recharge Successful",
+        description: `₹${selectedAmount} has been added to your wallet.`,
+      });
+
+      onClose();
     } catch (error: any) {
+      console.error("Firestore Error:", error.code, error.message);
       toast({
         variant: "destructive",
         title: "Recharge Failed",
