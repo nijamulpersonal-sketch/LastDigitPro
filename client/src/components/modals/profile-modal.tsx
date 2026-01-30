@@ -101,6 +101,12 @@ export function ProfileModal({ isOpen, onClose, onUpdate }: ProfileModalProps) {
     }
   };
 
+  const handleLogout = () => {
+    localStorage.removeItem("user_profile");
+    setUser(null);
+    onUpdate(null);
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="glass-dark border-amber-500/30 text-white max-w-sm p-0 rounded-[2.5rem] overflow-hidden gap-0">
@@ -122,14 +128,16 @@ export function ProfileModal({ isOpen, onClose, onUpdate }: ProfileModalProps) {
                   )}
                 </div>
               </div>
-              <label className="absolute bottom-2 right-0 w-8 h-8 bg-white text-slate-900 rounded-xl flex items-center justify-center cursor-pointer shadow-lg hover:scale-110 transition-transform">
-                <Camera className="w-4 h-4" />
-                <input type="file" className="hidden" accept="image/*" onChange={handlePhotoUpload} />
-              </label>
+              {user && (
+                <label className="absolute bottom-2 right-0 w-8 h-8 bg-white text-slate-900 rounded-xl flex items-center justify-center cursor-pointer shadow-lg hover:scale-110 transition-transform">
+                  <Camera className="w-4 h-4" />
+                  <input type="file" className="hidden" accept="image/*" onChange={handlePhotoUpload} />
+                </label>
+              )}
             </div>
 
             <h2 className="text-2xl font-black text-white tracking-tight">
-              {user?.name || "Your Profile"}
+              {user?.name || "Guest"}
             </h2>
 
             {user && (
@@ -142,14 +150,14 @@ export function ProfileModal({ isOpen, onClose, onUpdate }: ProfileModalProps) {
             )}
           </div>
 
-          {user && (
+          {user ? (
             <div className="space-y-4 pt-4">
               <div className="bg-neutral-900 p-4 rounded-2xl text-center">
                 <p className="text-[10px] text-gray-500 uppercase font-bold mb-1">Last Login</p>
                 <p className="text-sm font-semibold text-white">{lastLogin || "N/A"}</p>
               </div>
 
-              <button 
+              <button
                 onClick={handleSave}
                 disabled={loading}
                 className="w-full py-4 rounded-2xl bg-gradient-to-r from-amber-400 to-amber-600 text-slate-900 font-black uppercase tracking-widest text-xs shadow-lg shadow-amber-500/20"
@@ -157,16 +165,24 @@ export function ProfileModal({ isOpen, onClose, onUpdate }: ProfileModalProps) {
                 Save Changes
               </button>
 
-              <button 
-                onClick={() => {
-                  localStorage.removeItem("user_profile");
-                  setUser(null);
-                  onUpdate(null);
-                }}
+              <button
+                onClick={handleLogout}
                 className="w-full py-4 rounded-2xl bg-white/5 text-gray-400 font-bold text-xs border border-white/10"
               >
                 Logout Account
               </button>
+            </div>
+          ) : (
+            <div className="space-y-4 pt-4">
+              <button
+                onClick={onClose}
+                className="w-full py-4 rounded-2xl bg-gradient-to-r from-amber-400 to-amber-600 text-slate-900 font-black uppercase tracking-widest text-xs shadow-lg shadow-amber-500/20"
+              >
+                Login Account
+              </button>
+              <p className="text-center text-xs text-gray-500">
+                Please log in to access your profile
+              </p>
             </div>
           )}
 
