@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { User, Mail, Lock, Camera, X, ShieldCheck, Fingerprint, Calendar } from "lucide-react";
+import { User, Camera, X, ShieldCheck, Fingerprint } from "lucide-react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 
@@ -11,52 +11,50 @@ interface ProfileModalProps {
 
 export function ProfileModal({ isOpen, onClose, onUpdate }: ProfileModalProps) {
   const { toast } = useToast();
-  const [isLogin, setIsLogin] = useState(true);
+
+  const [lastLogin, setLastLogin] = useState("");
   const [formData, setFormData] = useState({
     name: "",
-    email: "",
-    password: "",
     age: "",
     photo: ""
   });
-  
-  const [user, setUser] = useState<any>(null);
 
+  const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    const savedUser = localStorage.getItem('user_profile');
+    const savedUser = localStorage.getItem("user_profile");
     if (savedUser) {
       const parsedUser = JSON.parse(savedUser);
       setUser(parsedUser);
       setFormData(prev => ({
         ...prev,
         ...parsedUser,
-        age: parsedUser.age || prev.age,
         photo: parsedUser.photo || prev.photo
       }));
     }
+
+    const firebaseUser = (window as any).firebase?.auth()?.currentUser;
+    if (firebaseUser?.metadata?.lastSignInTime) {
+      const date = new Date(firebaseUser.metadata.lastSignInTime);
+      const formatted = date.toLocaleString("en-GB", {
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: true,
+      });
+      setLastLogin(formatted);
+    }
   }, [isOpen]);
 
-  const generateIdentityNumber = () => {
-    return "LDP-" + Math.random().toString(36).substr(2, 9).toUpperCase();
-  };
-
   const handleSave = async () => {
-    if (!formData.email) {
-      toast({
-        variant: "destructive",
-        title: "Missing Fields",
-        description: "Email is required.",
-      });
-      return;
-    }
-
     setLoading(true);
     try {
       const db = (window as any).firebase.firestore();
       const currentUser = (window as any).firebase.auth().currentUser;
-      
+
       if (currentUser) {
         const userData = {
           name: formData.name,
@@ -66,20 +64,20 @@ export function ProfileModal({ isOpen, onClose, onUpdate }: ProfileModalProps) {
         };
 
         await db.collection("users").doc(currentUser.uid).update(userData);
-        
+
         const fullProfile = {
           ...user,
           ...formData,
           lastUpdate: new Date().toISOString()
         };
 
-        localStorage.setItem('user_profile', JSON.stringify(fullProfile));
+        localStorage.setItem("user_profile", JSON.stringify(fullProfile));
         setUser(fullProfile);
         onUpdate(fullProfile);
-        
+
         toast({
           title: "Profile Saved",
-          description: "Your information has been updated successfully in Firebase.",
+          description: "Your information has been updated successfully.",
         });
       }
     } catch (error: any) {
@@ -90,28 +88,6 @@ export function ProfileModal({ isOpen, onClose, onUpdate }: ProfileModalProps) {
       });
     }
     setLoading(false);
-  };
-
-  const handleLogin = () => {
-    const savedUser = localStorage.getItem('user_profile');
-    if (savedUser) {
-      const parsedUser = JSON.parse(savedUser);
-      if (parsedUser.email === formData.email && parsedUser.password === formData.password) {
-        setUser(parsedUser);
-        setFormData(parsedUser);
-        onUpdate(parsedUser);
-        toast({
-          title: "Welcome Back!",
-          description: `Logged in as ${parsedUser.name || parsedUser.email}`,
-        });
-        return;
-      }
-    }
-    toast({
-      variant: "destructive",
-      title: "Login Failed",
-      description: "Invalid email or password.",
-    });
   };
 
   const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -151,118 +127,54 @@ export function ProfileModal({ isOpen, onClose, onUpdate }: ProfileModalProps) {
                 <input type="file" className="hidden" accept="image/*" onChange={handlePhotoUpload} />
               </label>
             </div>
-            
+
             <h2 className="text-2xl font-black text-white tracking-tight">
-              {user?.name || (isLogin ? "Welcome Back" : "Create Account")}
+              {user?.name || "Your Profile"}
             </h2>
+
             {user && (
               <div className="flex items-center justify-center gap-2 mt-2">
                 <Fingerprint className="w-3 h-3 text-amber-400" />
-                <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">{user.id}</span>
+                <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">
+                  {user?.id || "USER"}
+                </span>
               </div>
             )}
           </div>
 
-          <div className="space-y-4">
-            {!user && !isLogin && (
-              <div className="relative">
-                <User className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
-                <input 
-                  type="text" 
-                  placeholder="Full Name"
-                  value={formData.name}
-                  onChange={(e) => setFormData({...formData, name: e.target.value})}
-                  className="w-full bg-white/5 border border-white/10 rounded-2xl py-3 pl-12 pr-4 text-sm focus:outline-none focus:border-amber-500/50 transition-colors"
-                />
+          {user && (
+            <div className="space-y-4 pt-4">
+              <div className="bg-neutral-900 p-4 rounded-2xl text-center">
+                <p className="text-[10px] text-gray-500 uppercase font-bold mb-1">Last Login</p>
+                <p className="text-sm font-semibold text-white">{lastLogin || "N/A"}</p>
               </div>
-            )}
 
-            <div className="relative">
-              <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
-              <input 
-                type="email" 
-                placeholder="Email Address"
-                value={formData.email}
-                onChange={(e) => setFormData({...formData, email: e.target.value})}
-                className="w-full bg-white/5 border border-white/10 rounded-2xl py-3 pl-12 pr-4 text-sm focus:outline-none focus:border-amber-500/50 transition-colors"
-              />
+              <button 
+                onClick={handleSave}
+                disabled={loading}
+                className="w-full py-4 rounded-2xl bg-gradient-to-r from-amber-400 to-amber-600 text-slate-900 font-black uppercase tracking-widest text-xs shadow-lg shadow-amber-500/20"
+              >
+                Save Changes
+              </button>
+
+              <button 
+                onClick={() => {
+                  localStorage.removeItem("user_profile");
+                  setUser(null);
+                  onUpdate(null);
+                }}
+                className="w-full py-4 rounded-2xl bg-white/5 text-gray-400 font-bold text-xs border border-white/10"
+              >
+                Logout Account
+              </button>
             </div>
-
-            <div className="relative">
-              <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
-              <input 
-                type="password" 
-                placeholder="Password"
-                value={formData.password}
-                onChange={(e) => setFormData({...formData, password: e.target.value})}
-                className="w-full bg-white/5 border border-white/10 rounded-2xl py-3 pl-12 pr-4 text-sm focus:outline-none focus:border-amber-500/50 transition-colors"
-              />
-            </div>
-
-            {!user && !isLogin && (
-              <div className="relative">
-                <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
-                <input 
-                  type="number" 
-                  placeholder="Age"
-                  value={formData.age}
-                  onChange={(e) => setFormData({...formData, age: e.target.value})}
-                  className="w-full bg-white/5 border border-white/10 rounded-2xl py-3 pl-12 pr-4 text-sm focus:outline-none focus:border-amber-500/50 transition-colors"
-                />
-              </div>
-            )}
-
-            {user ? (
-              <div className="space-y-4 pt-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="bg-white/5 rounded-2xl p-4 text-center">
-                    <span className="text-[10px] text-gray-500 uppercase font-bold block mb-1">Age</span>
-                    <span className="text-xl font-bold text-white">{user.age || "--"}</span>
-                  </div>
-                  <div className="bg-white/5 rounded-2xl p-4 text-center">
-                    <span className="text-[10px] text-gray-500 uppercase font-bold block mb-1">Status</span>
-                    <span className="text-sm font-bold text-emerald-400">ACTIVE VIP</span>
-                  </div>
-                </div>
-                <button 
-                  onClick={handleSave}
-                  className="w-full py-4 rounded-2xl bg-gradient-to-r from-amber-400 to-amber-600 text-slate-900 font-black uppercase tracking-widest text-xs shadow-lg shadow-amber-500/20"
-                >
-                  Save Changes
-                </button>
-                <button 
-                  onClick={() => {
-                    localStorage.removeItem('user_profile');
-                    setUser(null);
-                    setFormData({ name: "", email: "", password: "", age: "", photo: "" });
-                    onUpdate(null);
-                  }}
-                  className="w-full py-4 rounded-2xl bg-white/5 text-gray-400 font-bold text-xs border border-white/10"
-                >
-                  Logout Account
-                </button>
-              </div>
-            ) : (
-              <div className="space-y-4 pt-4">
-                <button 
-                  onClick={isLogin ? handleLogin : handleSave}
-                  className="w-full py-4 rounded-2xl bg-gradient-to-r from-amber-400 to-amber-600 text-slate-900 font-black uppercase tracking-widest text-xs shadow-lg shadow-amber-500/20"
-                >
-                  {isLogin ? "Login Now" : "Register Now"}
-                </button>
-                <button 
-                  onClick={() => setIsLogin(!isLogin)}
-                  className="w-full text-xs text-gray-400 font-bold uppercase tracking-widest hover:text-white transition-colors"
-                >
-                  {isLogin ? "Don't have an account? Sign Up" : "Already have an account? Login"}
-                </button>
-              </div>
-            )}
-          </div>
+          )}
 
           <div className="mt-8 flex items-center justify-center gap-2">
             <ShieldCheck className="w-3 h-3 text-emerald-500" />
-            <span className="text-[9px] text-gray-600 uppercase font-bold tracking-widest">End-to-End Encrypted</span>
+            <span className="text-[9px] text-gray-600 uppercase font-bold tracking-widest">
+              End-to-End Encrypted
+            </span>
           </div>
         </div>
       </DialogContent>
