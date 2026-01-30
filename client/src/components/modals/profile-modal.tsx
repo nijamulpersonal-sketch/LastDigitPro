@@ -23,31 +23,51 @@ export function ProfileModal({ isOpen, onClose, onUpdate }: ProfileModalProps) {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    const savedUser = localStorage.getItem("user_profile");
-    if (savedUser) {
-      const parsedUser = JSON.parse(savedUser);
-      setUser(parsedUser);
-      setFormData(prev => ({
-        ...prev,
-        ...parsedUser,
-        photo: parsedUser.photo || prev.photo
-      }));
-    }
+    const loadProfile = async () => {
+      const savedUser = localStorage.getItem("user_profile");
+      if (savedUser) {
+        const parsedUser = JSON.parse(savedUser);
+        setUser(parsedUser);
+        setFormData(prev => ({
+          ...prev,
+          ...parsedUser,
+          photo: parsedUser.photo || prev.photo
+        }));
+      }
 
-    const firebaseUser = (window as any).firebase?.auth()?.currentUser;
-    if (firebaseUser?.metadata?.lastSignInTime) {
-      const date = new Date(firebaseUser.metadata.lastSignInTime);
-      const formatted = date.toLocaleString("en-GB", {
-        day: "2-digit",
-        month: "short",
-        year: "numeric",
-        hour: "2-digit",
-        minute: "2-digit",
-        hour12: true,
-      });
-      setLastLogin(formatted);
-    }
+      const firebaseAuth = (window as any).firebase.auth();
+      const db = (window as any).firebase.firestore();
+      const currentUser = firebaseAuth.currentUser;
+
+      if (currentUser) {
+        const userRef = db.collection("users").doc(currentUser.uid);
+        const snap = await userRef.get();
+        const data = snap.data();
+
+        if (data?.firstLoginAt) {
+          const date = data.firstLoginAt.toDate();
+          setLastLogin(formatDate(date));
+        } else {
+          const now = new Date();
+          await userRef.update({ firstLoginAt: now });
+          setLastLogin(formatDate(now));
+        }
+      }
+    };
+
+    loadProfile();
   }, [isOpen]);
+
+  const formatDate = (date: Date) => {
+    return date.toLocaleString("en-GB", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: true,
+    });
+  };
 
   const handleSave = async () => {
     setLoading(true);
@@ -153,7 +173,7 @@ export function ProfileModal({ isOpen, onClose, onUpdate }: ProfileModalProps) {
           {user ? (
             <div className="space-y-4 pt-4">
               <div className="bg-neutral-900 p-4 rounded-2xl text-center">
-                <p className="text-[10px] text-gray-500 uppercase font-bold mb-1">Last Login</p>
+                <p className="text-[10px] text-gray-500 uppercase font-bold mb-1">First Login</p>
                 <p className="text-sm font-semibold text-white">{lastLogin || "N/A"}</p>
               </div>
 
