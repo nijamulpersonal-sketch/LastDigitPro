@@ -53,18 +53,25 @@ export default function Home() {
       setLocation("/login");
       return;
     }
-    if (savedUser) {
-      setUser(JSON.parse(savedUser));
-    }
 
-    // Live Firestore Balance Listener
+    // Live Firestore Listener for specified fields only
     const unsubscribeAuth = onAuthStateChanged(auth, (firebaseUser: any) => {
       if (firebaseUser) {
         const userDocRef = doc(db, "users", firebaseUser.uid);
         const unsubscribeSnapshot = onSnapshot(userDocRef, (docSnap: any) => {
           if (docSnap.exists()) {
             const data = docSnap.data();
-            setUserBalance(data.balance || 0);
+            // Strictly only use allowed fields
+            const userData = {
+              uid: firebaseUser.uid,
+              name: data.name || "User",
+              email: data.email || firebaseUser.email,
+              balance: data.balance || 0,
+              createdAt: data.createdAt || firebaseUser.metadata.creationTime
+            };
+            setUser(userData);
+            setUserBalance(userData.balance);
+            localStorage.setItem('user_profile', JSON.stringify(userData));
           }
         });
         return () => unsubscribeSnapshot();
@@ -75,7 +82,6 @@ export default function Home() {
       const now = new Date();  
       const hour = now.getHours();  
       const minute = now.getMinutes();  
-        
       let min = 10, max = 150;  
 
       if (hour === 12 && minute <= 56) {  
@@ -116,7 +122,16 @@ export default function Home() {
   const handlePrivacyClose = () => setShowPrivacy(false);
 
   const handleProfileUpdate = (updatedUser: any) => {
-    setUser(updatedUser);
+    // Ensure only allowed fields are saved during updates
+    const sanitized = {
+      uid: updatedUser.uid,
+      name: updatedUser.name,
+      email: updatedUser.email,
+      balance: updatedUser.balance,
+      createdAt: updatedUser.createdAt
+    };
+    setUser(sanitized);
+    localStorage.setItem('user_profile', JSON.stringify(sanitized));
   };
 
   const handleDepositSuccess = (newBalance: number) => {
@@ -160,11 +175,7 @@ export default function Home() {
               className="p-1.5 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all flex items-center gap-2 group"  
             >  
               <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center shadow-lg shadow-amber-500/20 overflow-hidden">  
-                {user?.photo ? (  
-                  <img src={user.photo} alt="Profile" className="w-full h-full object-cover" />  
-                ) : (  
-                  <UserCircle className="w-5 h-5 text-white" />  
-                )}  
+                <UserCircle className="w-5 h-5 text-white" />  
               </div>  
               <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest group-hover:text-amber-400 transition-colors">Profile</span>  
             </button>  
@@ -243,7 +254,7 @@ export default function Home() {
           </div>  
           <button   
             onClick={() => handlePlanSelect('first-time')}  
-            className="relative w-full py-3 rounded-xl bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-600 text-slate-900 font-black text-xs shadow-[0_4px_15px_rgba(251,191,36,0.2)] hover:shadow-[0_6px_20px_rgba(251,191,36,0.4)] active:scale-[0.98] transition-all duration-300 uppercase tracking-widest overflow-hidden group"  
+            className="relative w-full py-3 rounded-xl bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-600 text-slate-900 font-black text-xs shadow-[0_4px_15_rgba(251,191,36,0.2)] hover:shadow-[0_6px_20px_rgba(251,191,36,0.4)] active:scale-[0.98] transition-all duration-300 uppercase tracking-widest overflow-hidden group"  
           >  
             <span className="relative z-10">Unlock VIP Access</span>  
           </button>  
