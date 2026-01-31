@@ -1,12 +1,9 @@
 import { useState, useEffect } from "react";
 import { ChevronLeft, Mail, Lock, LogIn, UserPlus, ShieldCheck, UserCircle } from "lucide-react";
 import { Link, useLocation } from "wouter";
-import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword } from "firebase/auth";
-import { getFirestore, doc, setDoc, getDoc, serverTimestamp } from "firebase/firestore";
-import { app } from "@/lib/firebase";
-
-const auth = getAuth(app);
-const db = getFirestore(app);
+import { signInWithEmailAndPassword, createUserWithEmailAndPassword } from "firebase/auth";
+import { doc, setDoc, getDoc, serverTimestamp } from "firebase/firestore";
+import { auth, db } from "@/firebase";
 
 export default function Login() {
   const [location, setLocation] = useLocation();

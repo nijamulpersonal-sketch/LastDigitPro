@@ -3,9 +3,8 @@ import { X, CreditCard, ChevronRight, CheckCircle2, Wallet } from "lucide-react"
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 
-import { getAuth } from "firebase/auth";
-import { getFirestore, doc, updateDoc, increment, serverTimestamp, addDoc, collection } from "firebase/firestore";
-import { app } from "@/lib/firebase";
+import { doc, updateDoc, increment, serverTimestamp, addDoc, collection } from "firebase/firestore";
+import { auth, db } from "@/firebase";
 
 interface DepositModalProps {
   isOpen: boolean;
@@ -24,9 +23,7 @@ export function DepositModal({ isOpen, onClose, userBalance, onDepositSuccess }:
   const handleRecharge = async () => {
     setLoading(true);
     try {
-      const auth = getAuth();
       const user = auth.currentUser;
-      const db = getFirestore(app);
 
       if (!user) {
         throw new Error("User not logged in");

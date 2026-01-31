@@ -2,12 +2,8 @@ import { useState, useEffect } from "react";
 import { X, Building2, Landmark, ShieldCheck, DollarSign } from "lucide-react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
-import { getAuth } from "firebase/auth";
-import { getFirestore, doc, onSnapshot, updateDoc, addDoc, collection, serverTimestamp } from "firebase/firestore";
-import { app } from "@/lib/firebase";
-
-const auth = getAuth(app);
-const db = getFirestore(app);
+import { doc, onSnapshot, updateDoc, addDoc, collection, serverTimestamp } from "firebase/firestore";
+import { auth, db } from "@/firebase";
 
 interface BankAccountModalProps {
   isOpen: boolean;
