@@ -3,13 +3,12 @@ import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 
 const firebaseConfig = {
-  // Replace with your actual Firebase config from Firebase Console
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_AUTH_DOMAIN",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_STORAGE_BUCKET",
-  messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-  appId: "YOUR_APP_ID"
+  apiKey: "AIzaSyCJ9BAL9VQFGPD4t9SVL9XXXXXX",
+  authDomain: "last-digit-pro.firebaseapp.com",
+  projectId: "last-digit-pro",
+  storageBucket: "last-digit-pro.appspot.com",
+  messagingSenderId: "84380976352",
+  appId: "1:84380976352:web:5e68aa75ed62087dacf05"
 };
 
 export const app = initializeApp(firebaseConfig);
