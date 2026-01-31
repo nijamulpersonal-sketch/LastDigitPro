@@ -2,6 +2,12 @@ import { useState, useEffect } from "react";
 import { X, Building2, Landmark, ShieldCheck, DollarSign, ArrowRightLeft } from "lucide-react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
+import { getAuth } from "firebase/auth";
+import { getFirestore, doc, onSnapshot, updateDoc, addDoc, collection, serverTimestamp } from "firebase/firestore";
+import { app } from "@/lib/firebase";
+
+const auth = getAuth(app);
+const db = getFirestore(app);
 
 interface BankAccountModalProps {
   isOpen: boolean;
@@ -27,18 +33,28 @@ export function BankAccountModal({ isOpen, onClose }: BankAccountModalProps) {
       const savedUser = localStorage.getItem('user_profile');
       if (savedUser) {
         const parsedUser = JSON.parse(savedUser);
-        const existingBank = localStorage.getItem(`bank_${parsedUser.uid}`);
-        if (existingBank) {
-          setBankData(JSON.parse(existingBank));
-          setIsSaved(true);
-        }
         
-        const db = (window as any).firebase.firestore();
-        db.collection("users").doc(parsedUser.uid).get().then((doc: any) => {
-          if (doc.exists) {
-            setUserBalance(doc.data().balance || 0);
+        // Listen to User Data (Balance & Bank Details)
+        const userDocRef = doc(db, "users", parsedUser.uid);
+        const unsubscribe = onSnapshot(userDocRef, (docSnap) => {
+          if (docSnap.exists()) {
+            const data = docSnap.data();
+            setUserBalance(data.balance || 0);
+            
+            // If bank details exist, lock them
+            if (data.bankDetails) {
+              setBankData({
+                ifsc: data.bankDetails.ifsc || "",
+                accountNumber: data.bankDetails.accountNumber || "",
+                reAccountNumber: data.bankDetails.accountNumber || "",
+                upiId: data.bankDetails.upiId || ""
+              });
+              setIsSaved(true);
+            }
           }
         });
+        
+        return () => unsubscribe();
       }
     }
   }, [isOpen]);
@@ -53,22 +69,20 @@ export function BankAccountModal({ isOpen, onClose }: BankAccountModalProps) {
 
     setLoading(true);
     try {
-      const db = (window as any).firebase.firestore();
-      const currentUser = (window as any).firebase.auth().currentUser;
-      
+      const currentUser = auth.currentUser;
       if (currentUser) {
-        await db.collection("users").doc(currentUser.uid).update({
+        const userDocRef = doc(db, "users", currentUser.uid);
+        await updateDoc(userDocRef, {
           bankDetails: {
             ifsc: bankData.ifsc,
             accountNumber: bankData.accountNumber,
             upiId: bankData.upiId,
-            updatedAt: (window as any).firebase.firestore.FieldValue.serverTimestamp()
+            updatedAt: serverTimestamp()
           }
         });
 
-        localStorage.setItem(`bank_${currentUser.uid}`, JSON.stringify(bankData));
         setIsSaved(true);
-        toast({ title: "Success", description: "Bank account linked successfully" });
+        toast({ title: "Success", description: "Bank account linked permanently" });
       }
     } catch (error: any) {
       toast({ variant: "destructive", title: "Error", description: error.message });
@@ -87,25 +101,24 @@ export function BankAccountModal({ isOpen, onClose }: BankAccountModalProps) {
 
     setLoading(true);
     try {
-      const db = (window as any).firebase.firestore();
-      const currentUser = (window as any).firebase.auth().currentUser;
-      
+      const currentUser = auth.currentUser;
       if (currentUser) {
-        await db.collection("withdrawals").add({
+        // Log withdrawal request
+        await addDoc(collection(db, "withdrawals"), {
           uid: currentUser.uid,
           amount: amount,
           status: "pending",
           method: withdrawMethod,
           details: withdrawMethod === 'bank' ? bankData.accountNumber : bankData.upiId,
-          timestamp: (window as any).firebase.firestore.FieldValue.serverTimestamp()
+          timestamp: serverTimestamp()
         });
 
-        const newBalance = userBalance - amount;
-        await db.collection("users").doc(currentUser.uid).update({
-          balance: newBalance
+        // Deduct balance
+        const userDocRef = doc(db, "users", currentUser.uid);
+        await updateDoc(userDocRef, {
+          balance: userBalance - amount
         });
 
-        setUserBalance(newBalance);
         setWithdrawAmount("");
         toast({ title: "Request Sent", description: `Withdrawal request for ₹${amount} submitted` });
       }
@@ -130,7 +143,7 @@ export function BankAccountModal({ isOpen, onClose }: BankAccountModalProps) {
               <Landmark className="w-8 h-8 text-white" />
             </div>
             <h2 className="text-2xl font-black text-white tracking-tight">Bank Binding</h2>
-            <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mt-1">Secure Withdrawal Method</p>
+            <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mt-1">Permanent Withdrawal Method</p>
           </div>
 
           <div className="space-y-4">
@@ -143,19 +156,19 @@ export function BankAccountModal({ isOpen, onClose }: BankAccountModalProps) {
                   disabled={isSaved}
                   value={bankData.ifsc}
                   onChange={(e) => setBankData({...bankData, ifsc: e.target.value.toUpperCase()})}
-                  className="w-full bg-white/5 border border-white/10 rounded-2xl py-3 pl-12 pr-4 text-sm focus:outline-none focus:border-amber-500/50 transition-colors disabled:opacity-50"
+                  className="w-full bg-white/5 border border-white/10 rounded-2xl py-3 pl-12 pr-4 text-sm focus:outline-none focus:border-amber-500/50 transition-colors disabled:opacity-70 disabled:cursor-not-allowed"
                 />
               </div>
 
               <div className="relative">
                 <ShieldCheck className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
                 <input 
-                  type="password" 
+                  type={isSaved ? "text" : "password"}
                   placeholder="Account Number"
                   disabled={isSaved}
                   value={bankData.accountNumber}
                   onChange={(e) => setBankData({...bankData, accountNumber: e.target.value})}
-                  className="w-full bg-white/5 border border-white/10 rounded-2xl py-3 pl-12 pr-4 text-sm focus:outline-none focus:border-amber-500/50 transition-colors disabled:opacity-50"
+                  className="w-full bg-white/5 border border-white/10 rounded-2xl py-3 pl-12 pr-4 text-sm focus:outline-none focus:border-amber-500/50 transition-colors disabled:opacity-70 disabled:cursor-not-allowed"
                 />
               </div>
 
@@ -190,11 +203,17 @@ export function BankAccountModal({ isOpen, onClose }: BankAccountModalProps) {
                     placeholder="UPI ID"
                     disabled
                     value={bankData.upiId}
-                    className="w-full bg-white/5 border border-white/10 rounded-2xl py-3 pl-12 pr-4 text-sm opacity-50 cursor-not-allowed"
+                    className="w-full bg-white/5 border border-white/10 rounded-2xl py-3 pl-12 pr-4 text-sm opacity-70 cursor-not-allowed"
                   />
                 </div>
               )}
             </div>
+
+            {isSaved && (
+              <div className="bg-amber-500/10 border border-amber-500/20 rounded-xl p-2.5 text-center">
+                <p className="text-[9px] font-bold text-amber-500 uppercase tracking-widest">Details Locked Permanently</p>
+              </div>
+            )}
 
             {!isSaved ? (
               <button 

@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import logo from "@/assets/logo.png";
 import {
   ShieldCheck,
   Clock,
@@ -31,6 +30,9 @@ import { ChatBotModal } from "@/components/modals/chatbot-modal";
 import { BankAccountModal } from "@/components/modals/bank-account-modal";
 import { DepositModal } from "@/components/modals/deposit-modal";
 
+const auth = getAuth(app);
+const db = getFirestore(app);
+
 export default function Home() {
   const [location, setLocation] = useLocation();
   const [showPrivacy, setShowPrivacy] = useState(false);
@@ -44,59 +46,31 @@ export default function Home() {
   const [user, setUser] = useState<any>(null);
   const [userBalance, setUserBalance] = useState<number>(0);
   const [activeUsers, setActiveUsers] = useState(124);
-  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const auth = getAuth();
-    const db = getFirestore(app);
+    const savedUser = localStorage.getItem('user_profile');
+    if (!savedUser && location !== "/login") {
+      setLocation("/login");
+      return;
+    }
+    if (savedUser) {
+      setUser(JSON.parse(savedUser));
+    }
 
-    const unsubAuth = onAuthStateChanged(auth, (firebaseUser) => {
-      if (!firebaseUser) {
-        // No user logged in, redirect to login
-        if (location !== "/login") {
-          setLocation("/login");
-        }
-        setUserBalance(0);
-        setUser(null);
-        setIsLoading(false);
-        return;
+    // Live Firestore Balance Listener
+    const unsubscribeAuth = onAuthStateChanged(auth, (firebaseUser: any) => {
+      if (firebaseUser) {
+        const userDocRef = doc(db, "users", firebaseUser.uid);
+        const unsubscribeSnapshot = onSnapshot(userDocRef, (docSnap: any) => {
+          if (docSnap.exists()) {
+            const data = docSnap.data();
+            setUserBalance(data.balance || 0);
+          }
+        });
+        return () => unsubscribeSnapshot();
       }
-
-      // User is logged in, listen to their Firestore document
-      const unsubDoc = onSnapshot(doc(db, "users", firebaseUser.uid), (snap) => {
-        if (snap.exists()) {
-          const data = snap.data();
-          
-          // Set Firestore balance
-          setUserBalance(data.balance || 0);
-          
-          // Set user profile data from Firestore
-          setUser({
-            uid: firebaseUser.uid,
-            email: firebaseUser.email,
-            photo: data.photo || null,
-            name: data.name || firebaseUser.displayName,
-            phone: data.phone || null,
-            // Add other fields from Firestore as needed
-            ...data
-          });
-        } else {
-          // Document doesn't exist, create default
-          setUserBalance(0);
-          setUser({
-            uid: firebaseUser.uid,
-            email: firebaseUser.email,
-            photo: null,
-            name: firebaseUser.displayName,
-          });
-        }
-        setIsLoading(false);
-      });
-
-      return () => unsubDoc();
     });
 
-    // Update active users counter
     const updateActiveUsers = () => {  
       const now = new Date();  
       const hour = now.getHours();  
@@ -104,20 +78,13 @@ export default function Home() {
         
       let min = 10, max = 150;  
 
-      // Peak Time 1: 12:00 PM to 12:56 PM  
       if (hour === 12 && minute <= 56) {  
         min = 350; max = 500;  
-      }   
-      // Peak Time 2: 5:30 PM to 8:00 PM  
-      else if ((hour === 17 && minute >= 30) || (hour >= 18 && hour < 20)) {  
+      } else if ((hour === 17 && minute >= 30) || (hour >= 18 && hour < 20)) {  
         min = 350; max = 500;  
-      }  
-      // Night to Morning: 8:00 PM to 11:59 AM  
-      else if (hour >= 20 || hour < 12) {  
+      } else if (hour >= 20 || hour < 12) {  
         min = 10; max = 40;  
-      }  
-      // Normal Time: Everything else (rare gap if any)  
-      else {  
+      } else {  
         min = 50; max = 200;  
       }  
 
@@ -126,12 +93,12 @@ export default function Home() {
     };  
 
     updateActiveUsers();  
-    const interval = setInterval(updateActiveUsers, 5000); // Update every 5 seconds  
-
+    const interval = setInterval(updateActiveUsers, 5000); 
     return () => {
-      unsubAuth();
       clearInterval(interval);
+      unsubscribeAuth();
     };
+
   }, []);
 
   const handlePlanSelect = (plan: 'first-time' | 'regular') => {
@@ -149,39 +116,20 @@ export default function Home() {
   const handlePrivacyClose = () => setShowPrivacy(false);
 
   const handleProfileUpdate = (updatedUser: any) => {
-    // Remove balance from updatedUser if present
-    const { balance, ...userWithoutBalance } = updatedUser;
-    setUser(userWithoutBalance);
-    // Optionally: Save to Firestore here or let ProfileModal handle it
+    setUser(updatedUser);
   };
 
   const handleDepositSuccess = (newBalance: number) => {
-    // Update local state immediately for better UX
     setUserBalance(newBalance);
-    
     if (user) {
-      // Update user object without balance (balance is separate)
-      const updatedUser = { ...user };
-      // Don't store balance in user object, it's in separate state
+      const updatedUser = { ...user, balance: newBalance };
+      localStorage.setItem('user_profile', JSON.stringify(updatedUser));
       setUser(updatedUser);
     }
   };
 
-  // Show loading state
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-slate-900 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-amber-500 mx-auto"></div>
-          <p className="mt-4 text-gray-400">Loading...</p>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="min-h-screen pb-24 bg-slate-900 selection:bg-amber-500/30">
-      {/* AI Chat Bot Floating Button */}
       <button
         onClick={() => setShowChatBot(true)}
         className="fixed bottom-28 right-6 z-50 chatbot-btn flex items-center gap-2 px-5 py-3 rounded-full font-semibold transition-all duration-300 text-white bg-gradient-to-r from-purple-600 to-indigo-600 shadow-lg shadow-purple-500/30 hover:scale-105 active:scale-95"
@@ -190,9 +138,7 @@ export default function Home() {
         <span>Support</span>
       </button>
 
-      {/* Main Dashboard */}  
       <div className="max-w-md mx-auto px-4 pt-4">  
-        {/* Header - Compact & Premium */}  
         <div className="text-center mb-6">  
           <div className="flex justify-between items-center mb-4">  
             <div className="flex items-center gap-2">  
@@ -201,7 +147,6 @@ export default function Home() {
               </h1>  
             </div>  
 
-            {/* Live Active Users Counter */}  
             <div className="flex items-center gap-1.5 bg-emerald-500/10 border border-emerald-500/20 px-3 py-1 rounded-full animate-pulse">  
               <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full" />  
               <span className="text-[10px] font-bold text-emerald-400 uppercase tracking-widest flex items-center gap-1">  
@@ -225,7 +170,6 @@ export default function Home() {
             </button>  
           </div>  
 
-          {/* Wallet & Add Money Section */}  
           <div className="glass-dark rounded-2xl p-3 mb-4 border border-white/10 flex items-center justify-between shadow-xl">  
             <div className="flex items-center gap-3">  
               <div className="p-2 bg-emerald-500/10 rounded-xl border border-emerald-500/20">  
@@ -260,12 +204,9 @@ export default function Home() {
           </div>  
         </div>  
 
-        {/* Compact VIP Access Card */}  
         <div className="relative overflow-hidden glass-dark rounded-[1.5rem] p-4 mb-6 border border-white/10 shadow-[0_0_20px_rgba(251,191,36,0.1)]">  
           <div className="absolute -inset-full h-[300%] w-[300%] bg-[linear-gradient(45deg,transparent_25%,rgba(255,255,255,0.05)_50%,transparent_75%)] animate-[shimmer_5s_infinite] pointer-events-none"></div>  
-            
           <div className="absolute top-0 right-0 w-24 h-24 bg-amber-500/10 blur-[40px] -z-10"></div>  
-            
           <div className="flex items-center gap-2 mb-4 relative z-10">  
             <div className="p-2 bg-gradient-to-br from-amber-400 to-amber-600 rounded-xl shadow-lg shadow-amber-500/20">  
               <Crown className="w-5 h-5 text-white" />  
@@ -275,7 +216,6 @@ export default function Home() {
               <p className="text-[10px] text-gray-400 font-medium uppercase tracking-wider">Choose your plan</p>  
             </div>  
           </div>  
-            
           <div className="grid grid-cols-2 gap-2.5 mb-3 relative z-10">  
             <div   
               onClick={() => handlePlanSelect('first-time')}  
@@ -285,7 +225,6 @@ export default function Home() {
               <div className="text-2xl font-black text-white group-hover:scale-105 transition-transform duration-500 drop-shadow-[0_0_8px_rgba(255,255,255,0.2)]">₹29</div>  
               <div className="text-[8px] text-gray-500 font-medium uppercase mt-0.5">12 Days</div>  
             </div>  
-              
             <div   
               onClick={() => handlePlanSelect('regular')}  
               className="relative overflow-hidden bg-amber-400/[0.03] border border-amber-400/10 rounded-xl p-3 cursor-pointer hover:bg-white/[0.08] hover:border-amber-500/40 transition-all duration-500 text-center group"  
@@ -295,7 +234,6 @@ export default function Home() {
               <div className="text-[8px] text-gray-500 font-medium uppercase mt-0.5">30 Days</div>  
             </div>  
           </div>  
-
           <div className="flex gap-1.5 mb-3 relative z-10">  
             {['01:00 PM', '06:00 PM', '08:00 PM'].map((time) => (  
               <div key={time} className="flex-1 py-1.5 rounded-lg bg-white/[0.03] border border-white/5 text-emerald-400 font-bold text-[9px] text-center shadow-inner">  
@@ -303,7 +241,6 @@ export default function Home() {
               </div>  
             ))}  
           </div>  
-
           <button   
             onClick={() => handlePlanSelect('first-time')}  
             className="relative w-full py-3 rounded-xl bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-600 text-slate-900 font-black text-xs shadow-[0_4px_15px_rgba(251,191,36,0.2)] hover:shadow-[0_6px_20px_rgba(251,191,36,0.4)] active:scale-[0.98] transition-all duration-300 uppercase tracking-widest overflow-hidden group"  
@@ -312,7 +249,6 @@ export default function Home() {
           </button>  
         </div>  
 
-        {/* Features Grid */}  
         <div className="grid grid-cols-2 gap-4 mb-8">  
           <div onClick={() => setLocation('/lucky-search')} className="glass card-hover rounded-2xl p-4 cursor-pointer relative group">  
             <div className="absolute top-3 right-3"><Lock className="w-4 h-4 text-amber-400" /></div>  
@@ -322,7 +258,6 @@ export default function Home() {
             </div>  
             <p className="text-xs text-gray-400">VIP prediction tool</p>  
           </div>  
-
           <div onClick={() => setLocation('/dear-digits')} className="glass card-hover rounded-2xl p-4 cursor-pointer">  
             <div className="flex items-center gap-3 mb-2">  
               <div className="bg-gradient-to-br from-cyan-500 to-blue-600 p-2 rounded-lg"><TrendingUp className="w-5 h-5 text-white" /></div>  
@@ -330,7 +265,6 @@ export default function Home() {
             </div>  
             <p className="text-xs text-gray-400">20-day chart analysis</p>  
           </div>  
-
           <div   
             onClick={() => window.open('https://lotterysambad.one/', '_blank')}  
             className="glass card-hover rounded-2xl p-4 cursor-pointer"  
@@ -343,7 +277,6 @@ export default function Home() {
             </div>  
             <p className="text-xs text-gray-400">Official results archive</p>  
           </div>  
-
           <div onClick={handleSettingsOpen} className="glass card-hover rounded-2xl p-4 cursor-pointer">  
             <div className="flex items-center gap-3 mb-2">  
               <div className="bg-gradient-to-br from-gray-500 to-gray-700 p-2 rounded-lg">  
@@ -355,7 +288,6 @@ export default function Home() {
           </div>  
         </div>  
 
-        {/* Refund Guarantee */}  
         <div className="glass rounded-2xl p-5 mb-6 border border-rose-500/30">  
           <div className="flex items-start gap-3">  
             <div className="bg-gradient-to-br from-rose-500 to-pink-600 p-2 rounded-full"><ShieldCheck className="w-5 h-5 text-white" /></div>  
@@ -367,7 +299,6 @@ export default function Home() {
         </div>  
       </div>  
 
-      {/* Premium Bottom Navigation */}  
       <nav className="fixed bottom-0 left-0 right-0 z-50 px-6 pb-6 pt-2 pointer-events-none">  
         <div className="max-w-md mx-auto pointer-events-auto">  
           <div className="glass-dark border border-white/10 rounded-[2rem] p-2 shadow-[0_-10px_40px_rgba(0,0,0,0.5)] backdrop-blur-2xl flex items-center justify-between relative overflow-hidden">  
@@ -393,7 +324,7 @@ export default function Home() {
               className="flex-1 flex flex-col items-center justify-center gap-1 py-2 opacity-50 hover:opacity-100 transition-all"  
             >  
               <div className="p-2 rounded-2xl bg-white/5 text-gray-400">  
-                <CreditCard className="w-5 h-5" />  
+                <CreditCard className="w-5 h-5 text-gray-400" />  
               </div>  
               <span className="text-[10px] font-bold uppercase tracking-tighter text-gray-400">Bank</span>  
             </button>  
@@ -408,11 +339,10 @@ export default function Home() {
         </div>  
       </nav>  
 
-      {/* Modals */}  
       <SettingsModal isOpen={showSettings} onClose={handleSettingsClose} onOpenPrivacy={handlePrivacyOpen} />  
       <PrivacyPolicyModal isOpen={showPrivacy} onClose={handlePrivacyClose} />  
       <SubscriptionModal isOpen={showSubscription} onClose={() => setShowSubscription(false)} planType={selectedPlan} />  
-      <ProfileModal isOpen={showProfile} onClose={() => setShowProfile(false)} onUpdate={handleProfileUpdate} user={user} />  
+      <ProfileModal isOpen={showProfile} onClose={() => setShowProfile(false)} onUpdate={handleProfileUpdate} />  
       <ChatBotModal isOpen={showChatBot} onClose={() => setShowChatBot(false)} />  
       <BankAccountModal isOpen={showBank} onClose={() => setShowBank(false)} />  
       <DepositModal 
