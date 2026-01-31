@@ -1,6 +1,12 @@
 import { useState, useEffect } from "react";
 import { ChevronLeft, Mail, Lock, LogIn, UserPlus, ShieldCheck, UserCircle } from "lucide-react";
 import { Link, useLocation } from "wouter";
+import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword } from "firebase/auth";
+import { getFirestore, doc, setDoc, getDoc, serverTimestamp } from "firebase/firestore";
+import { app } from "@/lib/firebase";
+
+const auth = getAuth(app);
+const db = getFirestore(app);
 
 export default function Login() {
   const [location, setLocation] = useLocation();
@@ -10,10 +16,6 @@ export default function Login() {
   const [status, setStatus] = useState("");
   const [isRegistering, setIsRegistering] = useState(false);
   const [loading, setLoading] = useState(false);
-
-  const generateIdentityNumber = () => {
-    return "LDP-" + Math.random().toString(36).substr(2, 9).toUpperCase();
-  };
 
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -25,48 +27,46 @@ export default function Login() {
     setLoading(true);
     setStatus("Processing...");
     try {
-      const db = (window as any).firebase.firestore();
-      const auth = (window as any).firebase.auth();
-      
       let userCredential;
-      const identityId = generateIdentityNumber();
 
       if (isRegistering) {
-        userCredential = await auth.createUserWithEmailAndPassword(email, password);
-        await db.collection("users").doc(userCredential.user.uid).set({
-          uid: userCredential.user.uid,
+        userCredential = await createUserWithEmailAndPassword(auth, email, password);
+        const user = userCredential.user;
+        
+        // Permanent User Document with UID as Document ID
+        await setDoc(doc(db, "users", user.uid), {
+          uid: user.uid,
           name,
           email,
-          id: identityId,
           balance: 0,
-          createdAt: (window as any).firebase.firestore.FieldValue.serverTimestamp(),
-          phone: "",
-          age: "",
-          photo: ""
+          createdAt: serverTimestamp()
         });
         setStatus("Registration successful!");
       } else {
-        userCredential = await auth.signInWithEmailAndPassword(email, password);
+        userCredential = await signInWithEmailAndPassword(auth, email, password);
         setStatus("Login successful!");
       }
 
       const user = userCredential.user;
       
-      // Fetch user data from Firestore to get the unique ID
-      const userDoc = await db.collection("users").doc(user.uid).get();
+      // Fetch user data from Firestore to get the permanent details
+      const userDoc = await getDoc(doc(db, "users", user.uid));
       const userData = userDoc.data();
 
-      const updatedProfile = {
-        uid: user.uid,
-        email: user.email,
-        name: userData?.name || name,
-        id: userData?.id || identityId,
-        age: userData?.age || "",
-        photo: userData?.photo || null
-      };
-      
-      localStorage.setItem('user_profile', JSON.stringify(updatedProfile));
-      setTimeout(() => setLocation("/"), 1000);
+      if (userData) {
+        const profileData = {
+          uid: userData.uid,
+          email: userData.email,
+          name: userData.name,
+          balance: userData.balance || 0,
+          createdAt: userData.createdAt ? (userData.createdAt.toDate ? userData.createdAt.toDate().toISOString() : userData.createdAt) : new Date().toISOString()
+        };
+        
+        localStorage.setItem('user_profile', JSON.stringify(profileData));
+        setTimeout(() => setLocation("/"), 1000);
+      } else {
+        setStatus("User data not found in database.");
+      }
     } catch (error: any) {
       setStatus(error.message);
     }
@@ -180,7 +180,6 @@ export default function Login() {
           </div>
         </div>
 
-        {/* Security Trust Badges */}
         <div className="mt-8 flex justify-center items-center gap-6 opacity-40 grayscale hover:grayscale-0 transition-all duration-500">
           <div className="flex items-center gap-1.5">
             <ShieldCheck className="w-4 h-4" />

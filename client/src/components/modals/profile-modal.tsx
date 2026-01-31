@@ -79,7 +79,7 @@ export function ProfileModal({ isOpen, onClose, onUpdate }: ProfileModalProps) {
             </h2>
             <div className="flex items-center justify-center gap-2 mt-2">
               <Fingerprint className="w-3 h-3 text-amber-400" />
-              <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">UID: {user?.uid?.slice(0, 8)}...</span>
+              <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Permanent ID: {user?.uid}</span>
             </div>
           </div>
 
