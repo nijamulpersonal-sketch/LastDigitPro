@@ -188,13 +188,6 @@ export default function Home() {
                 <p className="text-lg font-black text-white leading-none">₹{userBalance}</p>  
               </div>  
             </div>  
-            <button   
-              onClick={() => setShowDeposit(true)}  
-              className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 text-white font-black text-[10px] uppercase tracking-widest shadow-lg shadow-emerald-500/20 active:scale-95 transition-all flex items-center gap-2"  
-            >  
-              <img src="https://flagcdn.com/w20/in.png" alt="IND" className="w-4 h-3 rounded-sm" />  
-              Deposite  
-            </button>  
           </div>  
 
           <div className="glass rounded-2xl px-4 py-3 mb-2 gold-glow border-amber-400/20">  
