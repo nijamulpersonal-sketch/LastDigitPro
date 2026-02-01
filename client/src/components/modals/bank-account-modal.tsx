@@ -3,7 +3,7 @@ import { X, Building2, Landmark, ShieldCheck, DollarSign } from "lucide-react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { doc, onSnapshot, updateDoc, addDoc, collection, serverTimestamp } from "firebase/firestore";
-import { auth, db } from "../firebase";
+import { auth, db } from "@/firebase";
 
 interface BankAccountModalProps {
   isOpen: boolean;

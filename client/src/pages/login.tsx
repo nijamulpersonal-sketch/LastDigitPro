@@ -3,7 +3,7 @@ import { ChevronLeft, Mail, Lock, LogIn, UserPlus, ShieldCheck, UserCircle } fro
 import { Link, useLocation } from "wouter";
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword } from "firebase/auth";
 import { doc, setDoc, getDoc, serverTimestamp } from "firebase/firestore";
-import { auth, db } from "../firebase";
+import { auth, db } from "@/firebase";
 
 export default function Login() {
   const [location, setLocation] = useLocation();
