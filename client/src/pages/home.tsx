@@ -178,18 +178,6 @@ export default function Home() {
             </button>  
           </div>  
 
-          <div className="glass-dark rounded-2xl p-3 mb-4 border border-white/10 flex items-center justify-between shadow-xl">  
-            <div className="flex items-center gap-3">  
-              <div className="p-2 bg-emerald-500/10 rounded-xl border border-emerald-500/20">  
-                <CreditCard className="w-5 h-5 text-emerald-400" />  
-              </div>  
-              <div>  
-                <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Available Balance</p>  
-                <p className="text-lg font-black text-white leading-none">₹{userBalance}</p>  
-              </div>  
-            </div>  
-          </div>  
-
           <div className="glass rounded-2xl px-4 py-3 mb-2 gold-glow border-amber-400/20">  
             <div className="flex justify-center items-center gap-2">  
               <div className="flex items-center">  
