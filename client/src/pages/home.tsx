@@ -1,3 +1,6 @@
+import { onAuthStateChanged } from "firebase/auth";
+import { doc, onSnapshot } from "firebase/firestore";
+import { auth, db } from "../firebase";
 import { useState, useEffect } from "react";
 import {
   ShieldCheck,
@@ -19,9 +22,6 @@ import {
   DollarSign
 } from "lucide-react";
 import { useLocation } from "wouter";
-import { getAuth, onAuthStateChanged } from "firebase/auth";
-import { getFirestore, doc, onSnapshot } from "firebase/firestore";
-import { app } from "@/lib/firebase";
 import { PrivacyPolicyModal } from "@/components/modals/privacy-policy-modal";
 import { SubscriptionModal } from "@/components/modals/subscription-modal";
 import { SettingsModal } from "@/components/modals/settings-modal";
@@ -29,9 +29,6 @@ import { ProfileModal } from "@/components/modals/profile-modal";
 import { ChatBotModal } from "@/components/modals/chatbot-modal";
 import { BankAccountModal } from "@/components/modals/bank-account-modal";
 import { DepositModal } from "@/components/modals/deposit-modal";
-
-const auth = getAuth(app);
-const db = getFirestore(app);
 
 export default function Home() {
   const [location, setLocation] = useLocation();

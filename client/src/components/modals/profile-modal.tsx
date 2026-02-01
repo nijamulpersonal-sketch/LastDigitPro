@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { X, ShieldCheck, Fingerprint, Clock, User, LogOut } from "lucide-react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
-import { auth } from "@/firebase";
+import { auth } from "../firebase";
 
 interface ProfileModalProps {
   isOpen: boolean;

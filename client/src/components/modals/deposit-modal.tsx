@@ -4,7 +4,7 @@ import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 
 import { doc, updateDoc, increment, serverTimestamp, addDoc, collection } from "firebase/firestore";
-import { auth, db } from "@/firebase";
+import { auth, db } from "../firebase";
 
 interface DepositModalProps {
   isOpen: boolean;
