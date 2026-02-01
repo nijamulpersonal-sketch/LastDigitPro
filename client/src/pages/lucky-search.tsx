@@ -2,7 +2,8 @@ import { useState, useEffect, useMemo } from "react";
 import { ChevronLeft, Clock, Sparkles, CheckCircle, Info, Lock } from "lucide-react";
 import { Link } from "wouter";
 import { motion, AnimatePresence } from "framer-motion";
-import { ActivationModal } from "@/components/modals/activation-modal";
+import { collection, addDoc, serverTimestamp, query, where, getDocs, limit } from "firebase/firestore";
+import { auth, db } from "@/firebase";
 
 // Helper to generate seed-based random numbers (consistent for all users based on date)
 const getDailyNumbers = (time: string, count: number) => {
@@ -102,10 +103,40 @@ export default function LuckySearch() {
     setShowTimePopup(true);
   };
 
-  const handleTimeSelect = (time: keyof typeof TIME_CONFIG) => {
+  const handleTimeSelect = async (time: keyof typeof TIME_CONFIG) => {
     if (getSlotStatus(time)) {
       setSelectedTime(time);
       setShowTimePopup(false);
+
+      // Save to History (Firestore)
+      if (auth.currentUser) {
+        try {
+          const numbers = getDailyNumbers(time, 4);
+          
+          // Check if already saved for today to prevent duplicates
+          const today = new Date().toISOString().split('T')[0];
+          const q = query(
+            collection(db, "predictions"),
+            where("uid", "==", auth.currentUser.uid),
+            where("drawTime", "==", time),
+            where("date", "==", today),
+            limit(1)
+          );
+          
+          const querySnapshot = await getDocs(q);
+          if (querySnapshot.empty) {
+            await addDoc(collection(db, "predictions"), {
+              uid: auth.currentUser.uid,
+              numbers: numbers,
+              drawTime: time,
+              date: today,
+              timestamp: serverTimestamp()
+            });
+          }
+        } catch (error) {
+          console.error("Error saving prediction:", error);
+        }
+      }
     }
   };
 
