@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { X, Settings, Shield, Bell, Zap, LogOut, ChevronRight, Moon, User } from "lucide-react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { auth } from "@/firebase";
 import { useToast } from "@/hooks/use-toast";
 
 interface SettingsModalProps {
@@ -14,9 +13,10 @@ export function SettingsModal({ isOpen, onClose, onOpenPrivacy }: SettingsModalP
   const { toast } = useToast();
   
   const handleLogout = () => {
-    auth.signOut();
     localStorage.removeItem('user_profile');
+    localStorage.removeItem('is_logged_in');
     onClose();
+    window.location.href = "/login";
     toast({ title: "Logged Out", description: "Successfully signed out." });
   };
 

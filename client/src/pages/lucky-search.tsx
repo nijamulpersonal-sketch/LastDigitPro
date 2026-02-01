@@ -2,8 +2,7 @@ import { useState, useEffect, useMemo } from "react";
 import { ChevronLeft, Clock, Sparkles, CheckCircle, Info, Lock } from "lucide-react";
 import { Link } from "wouter";
 import { motion, AnimatePresence } from "framer-motion";
-import { collection, addDoc, serverTimestamp, query, where, getDocs, limit } from "firebase/firestore";
-import { auth, db } from "@/firebase";
+import { ActivationModal } from "@/components/modals/activation-modal";
 
 // Helper to generate seed-based random numbers (consistent for all users based on date)
 const getDailyNumbers = (time: string, count: number) => {
@@ -50,20 +49,9 @@ export default function LuckySearch() {
     const now = currentTime;
     const hours = now.getHours();
     
-    // 1:00 PM (13:00) Slot: Opens from 00:00 to 13:00
-    if (timeKey === "1:00 PM") {
-      return hours < 13;
-    }
-    
-    // 6:00 PM (18:00) Slot: Opens from 13:00 to 18:00
-    if (timeKey === "6:00 PM") {
-      return hours >= 13 && hours < 18;
-    }
-    
-    // 8:00 PM (20:00) Slot: Opens from 18:00 to 20:00
-    if (timeKey === "8:00 PM") {
-      return hours >= 18 && hours < 20;
-    }
+    if (timeKey === "1:00 PM") return hours < 13;
+    if (timeKey === "6:00 PM") return hours >= 13 && hours < 18;
+    if (timeKey === "8:00 PM") return hours >= 18 && hours < 20;
 
     return false;
   };
@@ -81,7 +69,6 @@ export default function LuckySearch() {
     if (activated && expiryStr) {
       const expiry = new Date(expiryStr);
       if (new Date() > expiry) {
-        // VIP Expired
         localStorage.removeItem('vip_activated');
         localStorage.removeItem('vip_expiry');
         localStorage.removeItem('vip_code_used');
@@ -103,39 +90,26 @@ export default function LuckySearch() {
     setShowTimePopup(true);
   };
 
-  const handleTimeSelect = async (time: keyof typeof TIME_CONFIG) => {
+  const handleTimeSelect = (time: keyof typeof TIME_CONFIG) => {
     if (getSlotStatus(time)) {
       setSelectedTime(time);
       setShowTimePopup(false);
 
-      // Save to History (Firestore)
-      if (auth.currentUser) {
-        try {
-          const numbers = getDailyNumbers(time, 4);
-          
-          // Check if already saved for today to prevent duplicates
-          const today = new Date().toISOString().split('T')[0];
-          const q = query(
-            collection(db, "predictions"),
-            where("uid", "==", auth.currentUser.uid),
-            where("drawTime", "==", time),
-            where("date", "==", today),
-            limit(1)
-          );
-          
-          const querySnapshot = await getDocs(q);
-          if (querySnapshot.empty) {
-            await addDoc(collection(db, "predictions"), {
-              uid: auth.currentUser.uid,
-              numbers: numbers,
-              drawTime: time,
-              date: today,
-              timestamp: serverTimestamp()
-            });
-          }
-        } catch (error) {
-          console.error("Error saving prediction:", error);
-        }
+      // Save to History (LocalStorage instead of Firestore)
+      const numbers = getDailyNumbers(time, 4);
+      const history = JSON.parse(localStorage.getItem('prediction_history') || '[]');
+      const today = new Date().toISOString().split('T')[0];
+      
+      const isDuplicate = history.some((h: any) => h.date === today && h.drawTime === time);
+      
+      if (!isDuplicate) {
+        history.push({
+          numbers,
+          drawTime: time,
+          date: today,
+          timestamp: Date.now()
+        });
+        localStorage.setItem('prediction_history', JSON.stringify(history));
       }
     }
   };
@@ -239,14 +213,12 @@ export default function LuckySearch() {
           </div>
         )}
 
-        {/* Activation Modal */}
         <ActivationModal 
           isOpen={showActivationModal}
           onClose={() => setShowActivationModal(false)}
           onSuccess={handleActivationSuccess}
         />
 
-        {/* Time Selection Popup */}
         <AnimatePresence>
           {showTimePopup && (
             <div className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-slate-950/80 backdrop-blur-md">

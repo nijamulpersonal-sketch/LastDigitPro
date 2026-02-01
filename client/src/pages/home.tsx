@@ -1,25 +1,19 @@
-import { onAuthStateChanged } from "firebase/auth";
-import { doc, onSnapshot } from "firebase/firestore";
-import { auth, db } from "@/firebase";
 import { useState, useEffect } from "react";
 import {
   ShieldCheck,
   Clock,
   Crown,
-  CheckCircle,
   Search,
   TrendingUp,
   FileText,
   Settings,
-  MessageCircle,
   Lock,
   UserCircle,
   MessageSquare,
   Users,
   Home as HomeIcon,
   History,
-  CreditCard,
-  DollarSign
+  CheckCircle
 } from "lucide-react";
 import { useLocation } from "wouter";
 import { PrivacyPolicyModal } from "@/components/modals/privacy-policy-modal";
@@ -27,8 +21,6 @@ import { SubscriptionModal } from "@/components/modals/subscription-modal";
 import { SettingsModal } from "@/components/modals/settings-modal";
 import { ProfileModal } from "@/components/modals/profile-modal";
 import { ChatBotModal } from "@/components/modals/chatbot-modal";
-import { BankAccountModal } from "@/components/modals/bank-account-modal";
-import { DepositModal } from "@/components/modals/deposit-modal";
 import { HistoryModal } from "@/components/modals/history-modal";
 
 export default function Home() {
@@ -38,43 +30,25 @@ export default function Home() {
   const [showSubscription, setShowSubscription] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
   const [showChatBot, setShowChatBot] = useState(false);
-  const [showBank, setShowBank] = useState(false);
-  const [showDeposit, setShowDeposit] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<'first-time' | 'regular' | null>(null);
   const [user, setUser] = useState<any>(null);
-  const [userBalance, setUserBalance] = useState<number>(0);
   const [activeUsers, setActiveUsers] = useState(124);
 
   useEffect(() => {
-    const savedUser = localStorage.getItem('user_profile');
-    if (!savedUser && location !== "/login") {
+    const isLoggedIn = localStorage.getItem('is_logged_in') === 'true';
+    if (!isLoggedIn) {
       setLocation("/login");
       return;
     }
 
-    // Live Firestore Listener for specified fields only
-    const unsubscribeAuth = onAuthStateChanged(auth, (firebaseUser: any) => {
-      if (firebaseUser) {
-        const userDocRef = doc(db, "users", firebaseUser.uid);
-        const unsubscribeSnapshot = onSnapshot(userDocRef, (docSnap: any) => {
-          if (docSnap.exists()) {
-            const data = docSnap.data();
-            // Strictly only use allowed fields
-            const userData = {
-              uid: firebaseUser.uid,
-              name: data.name || "User",
-              email: data.email || firebaseUser.email,
-              balance: data.balance || 0,
-              createdAt: data.createdAt || firebaseUser.metadata.creationTime
-            };
-            setUser(userData);
-            setUserBalance(userData.balance);
-            localStorage.setItem('user_profile', JSON.stringify(userData));
-          }
-        });
-        return () => unsubscribeSnapshot();
-      }
+    const userData = JSON.parse(localStorage.getItem('user_profile') || '{}');
+    setUser({
+      uid: userData.uid || 'guest-123',
+      name: userData.name || "Guest User",
+      email: userData.email || "guest@example.com",
+      balance: 0,
+      createdAt: new Date().toISOString()
     });
 
     const updateActiveUsers = () => {  
@@ -99,12 +73,8 @@ export default function Home() {
 
     updateActiveUsers();  
     const interval = setInterval(updateActiveUsers, 5000); 
-    return () => {
-      clearInterval(interval);
-      unsubscribeAuth();
-    };
-
-  }, []);
+    return () => clearInterval(interval);
+  }, [location, setLocation]);
 
   const handlePlanSelect = (plan: 'first-time' | 'regular') => {
     setSelectedPlan(plan);
@@ -121,25 +91,8 @@ export default function Home() {
   const handlePrivacyClose = () => setShowPrivacy(false);
 
   const handleProfileUpdate = (updatedUser: any) => {
-    // Ensure only allowed fields are saved during updates
-    const sanitized = {
-      uid: updatedUser.uid,
-      name: updatedUser.name,
-      email: updatedUser.email,
-      balance: updatedUser.balance,
-      createdAt: updatedUser.createdAt
-    };
-    setUser(sanitized);
-    localStorage.setItem('user_profile', JSON.stringify(sanitized));
-  };
-
-  const handleDepositSuccess = (newBalance: number) => {
-    setUserBalance(newBalance);
-    if (user) {
-      const updatedUser = { ...user, balance: newBalance };
-      localStorage.setItem('user_profile', JSON.stringify(updatedUser));
-      setUser(updatedUser);
-    }
+    setUser(updatedUser);
+    localStorage.setItem('user_profile', JSON.stringify(updatedUser));
   };
 
   return (
@@ -292,32 +245,35 @@ export default function Home() {
 
       <nav className="fixed bottom-0 left-0 right-0 z-50 px-6 pb-6 pt-2 pointer-events-none">  
         <div className="max-w-md mx-auto pointer-events-auto">  
-          <div className="glass-dark border border-white/10 rounded-[2rem] p-2 shadow-[0_-10px_40px_rgba(0,0,0,0.5)] backdrop-blur-2xl flex items-center justify-between relative overflow-hidden">  
+          <div className="glass-dark border border-white/10 rounded-[2rem] p-2 shadow-[0_-10px_40px_rgba(0,0,0,0.5)] backdrop-blur-2xl flex items-center justify-between relative overflow-hidden bg-slate-900/40">  
             <div className="absolute -inset-full h-[300%] w-[300%] bg-[linear-gradient(45deg,transparent_25%,rgba(255,255,255,0.03)_50%,transparent_75%)] animate-[shimmer_8s_infinite] pointer-events-none"></div>  
 
-            <button className="flex-1 flex flex-col items-center justify-center gap-1 py-2 group/nav relative">  
-              <div className="p-2 rounded-2xl bg-amber-500/10 text-amber-500">  
+            <button className="flex-1 flex flex-col items-center justify-center gap-1 py-3 group/nav relative transition-all active:scale-90">  
+              <div className="p-2.5 rounded-2xl bg-gradient-to-br from-amber-400 to-amber-600 text-slate-900 shadow-lg shadow-amber-500/40 border border-amber-300/30">  
                 <HomeIcon className="w-5 h-5" />  
               </div>  
-              <span className="text-[10px] font-bold uppercase tracking-tighter text-amber-500">Home</span>  
-              <div className="absolute -bottom-1 w-1 h-1 bg-amber-500 rounded-full shadow-[0_0_10px_#f59e0b]"></div>  
+              <span className="text-[10px] font-black uppercase tracking-tighter text-amber-500 mt-1">Home</span>  
+              <div className="absolute -bottom-1 w-2 h-2 bg-amber-500 rounded-full shadow-[0_0_15px_#f59e0b]"></div>  
             </button>  
 
             <button 
               onClick={() => setShowHistory(true)}
-              className="flex-1 flex flex-col items-center justify-center gap-1 py-2 opacity-50 hover:opacity-100 transition-all"
+              className="flex-1 flex flex-col items-center justify-center gap-1 py-3 opacity-60 hover:opacity-100 transition-all active:scale-90 group"
             >  
-              <div className="p-2 rounded-2xl bg-white/5 text-gray-400">  
+              <div className="p-2.5 rounded-2xl bg-white/5 text-gray-400 group-hover:bg-gradient-to-br group-hover:from-purple-500 group-hover:to-purple-700 group-hover:text-white transition-all shadow-xl border border-white/5">  
                 <History className="w-5 h-5" />  
               </div>  
-              <span className="text-[10px] font-bold uppercase tracking-tighter text-gray-400">History</span>  
+              <span className="text-[10px] font-bold uppercase tracking-tighter text-gray-500 group-hover:text-purple-400 transition-colors mt-1">History</span>  
             </button>  
 
-            <button onClick={handleSettingsOpen} className="flex-1 flex flex-col items-center justify-center gap-1 py-2 opacity-50 hover:opacity-100 transition-all">  
-              <div className="p-2 rounded-2xl bg-white/5 text-gray-400">  
+            <button 
+              onClick={handleSettingsOpen} 
+              className="flex-1 flex flex-col items-center justify-center gap-1 py-3 opacity-60 hover:opacity-100 transition-all active:scale-90 group"
+            >  
+              <div className="p-2.5 rounded-2xl bg-white/5 text-gray-400 group-hover:bg-gradient-to-br group-hover:from-blue-500 group-hover:to-blue-700 group-hover:text-white transition-all shadow-xl border border-white/5">  
                 <Settings className="w-5 h-5" />  
               </div>  
-              <span className="text-[10px] font-bold uppercase tracking-tighter text-gray-400">Settings</span>  
+              <span className="text-[10px] font-bold uppercase tracking-tighter text-gray-500 group-hover:text-blue-400 transition-colors mt-1">Settings</span>  
             </button>  
           </div>  
         </div>  
@@ -328,14 +284,7 @@ export default function Home() {
       <SubscriptionModal isOpen={showSubscription} onClose={() => setShowSubscription(false)} planType={selectedPlan} />  
       <ProfileModal isOpen={showProfile} onClose={() => setShowProfile(false)} onUpdate={handleProfileUpdate} />  
       <ChatBotModal isOpen={showChatBot} onClose={() => setShowChatBot(false)} />  
-      <BankAccountModal isOpen={showBank} onClose={() => setShowBank(false)} />  
       <HistoryModal isOpen={showHistory} onClose={() => setShowHistory(false)} />
-      <DepositModal 
-        isOpen={showDeposit} 
-        onClose={() => setShowDeposit(false)} 
-        userBalance={userBalance}
-        onDepositSuccess={handleDepositSuccess}
-      />
     </div>
   );
 }

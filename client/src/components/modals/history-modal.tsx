@@ -1,8 +1,6 @@
 import { useState, useEffect } from "react";
 import { X, History, Trash2, Calendar, Trophy, Star } from "lucide-react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { auth, db } from "@/firebase";
-import { collection, query, where, orderBy, onSnapshot, limit } from "firebase/firestore";
 
 interface HistoryModalProps {
   isOpen: boolean;
@@ -11,27 +9,12 @@ interface HistoryModalProps {
 
 export function HistoryModal({ isOpen, onClose }: HistoryModalProps) {
   const [history, setHistory] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (isOpen && auth.currentUser) {
-      const q = query(
-        collection(db, "predictions"),
-        where("uid", "==", auth.currentUser.uid),
-        orderBy("timestamp", "desc"),
-        limit(20)
-      );
-
-      const unsubscribe = onSnapshot(q, (snapshot) => {
-        const docs = snapshot.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data()
-        }));
-        setHistory(docs);
-        setLoading(false);
-      });
-
-      return () => unsubscribe();
+    if (isOpen) {
+      const savedHistory = JSON.parse(localStorage.getItem('prediction_history') || '[]');
+      setHistory(savedHistory.sort((a: any, b: any) => b.timestamp - a.timestamp));
     }
   }, [isOpen]);
 
@@ -66,14 +49,14 @@ export function HistoryModal({ isOpen, onClose }: HistoryModalProps) {
               </div>
             ) : (
               history.map((item, idx) => (
-                <div key={item.id} className="glass-dark border border-white/5 rounded-3xl p-5 relative overflow-hidden group">
+                <div key={idx} className="glass-dark border border-white/5 rounded-3xl p-5 relative overflow-hidden group">
                   <div className="absolute top-0 right-0 w-24 h-24 bg-amber-500/5 blur-2xl group-hover:bg-amber-500/10 transition-all"></div>
                   
                   <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center gap-2">
                       <Calendar className="w-3 h-3 text-amber-500" />
                       <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
-                        {item.timestamp?.toDate ? item.timestamp.toDate().toLocaleDateString('en-IN', { day: '2-digit', month: 'short' }) : 'Today'}
+                        {new Date(item.timestamp).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })}
                       </span>
                     </div>
                     <div className="px-3 py-1 bg-amber-500/10 rounded-full">
